@@ -64,26 +64,27 @@ jobs:
             exit 1
           fi
 
-      - name: Validate references nesting (advanced/ is the only 2-level path)
+      - name: Validate references nesting (advanced/ is the only 2-level subdir)
         shell: bash
         run: |
           set -euo pipefail
-          # Find .md files under references/ deeper than advanced/
+          # For each file under skills/<slug>/references/, measure how many subdirs deep it sits.
+          #   depth 0 (references/x.md)                    → OK
+          #   depth 1, subdir is "advanced" (references/advanced/x.md) → OK
+          #   depth 1, subdir is anything else             → error
+          #   depth >= 2                                   → error
           while IFS= read -r -d '' f; do
-            depth=$(echo "$f" | tr -cd '/' | wc -c)
-            # expected depth for skills/<slug>/references/<file>.md = 3 slashes
-            # expected depth for skills/<slug>/references/advanced/<file>.md = 4 slashes
-            rel="${f#./}"
-            rel="${rel#skills/}"
-            slash_count=$(echo "$rel" | tr -cd '/' | wc -c)
-            # slash_count now: references/x.md → 1, references/advanced/x.md → 2
-            if [ "$slash_count" -gt 2 ]; then
-              echo "::error file=$f::references/ nesting exceeds 2 levels (advanced/ is the only allowed 2-level path)"
+            # everything after references/
+            sub="${f#*/references/}"
+            # count slashes in sub to get subdir depth of the file
+            depth=$(awk -F/ '{print NF-1}' <<< "$sub")
+            first_subdir="${sub%%/*}"
+            if [ "$depth" -gt 1 ]; then
+              echo "::error file=$f::references/ file nested more than 1 level deep (got $depth subdirs after references/)"
               exit 1
             fi
-            # Check 2-level path starts with advanced/
-            if [ "$slash_count" -eq 2 ] && [[ "$rel" != references/advanced/* ]]; then
-              echo "::error file=$f::2-level references/ path must start with advanced/"
+            if [ "$depth" -eq 1 ] && [ "$first_subdir" != "advanced" ]; then
+              echo "::error file=$f::only references/advanced/ is allowed as a subdirectory; got references/$first_subdir/"
               exit 1
             fi
           done < <(find skills -path '*/references/*' -name '*.md' -print0)

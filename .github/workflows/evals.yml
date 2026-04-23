@@ -42,7 +42,7 @@ jobs:
             "properties": {
               "id": {
                 "type": "string",
-                "pattern": "^[0-9]{2}[a-z]?-[a-z0-9-]+$"
+                "pattern": "^[0-9]{2}[a-z]?-[A-Za-z0-9-]+$"
               },
               "title": { "type": "string", "minLength": 5 },
               "use_case_ids": {
