@@ -1,7 +1,0 @@
-{
-  "name": "bm-code-management",
-  "version": "1.0.0",
-  "description": "BaseMachina でアクション定義を編集し、bm sync で差分をプレビューする skill。",
-  "homepage": "https://github.com/basemachina/skills/tree/main/skills/bm-code-management",
-  "license": "Apache-2.0"
-}
