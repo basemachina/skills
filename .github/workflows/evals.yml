@@ -27,7 +27,9 @@ jobs:
           node-version: '22'
 
       - name: Install tooling
-        run: npm install -g ajv-cli@5 ajv-formats@3 js-yaml@4
+        run: |
+          npm install -g ajv-cli@5 ajv-formats@3 js-yaml@4
+          echo "NODE_PATH=$(npm root -g)" >> "$GITHUB_ENV"
 
       - name: Write case schema
         run: |

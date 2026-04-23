@@ -191,9 +191,14 @@ jobs:
           {
             "default": true,
             "MD013": false,
+            "MD028": false,
+            "MD032": false,
             "MD033": false,
             "MD034": false,
+            "MD040": false,
             "MD041": false,
+            "MD056": false,
+            "MD060": false,
             "MD007": { "indent": 2 }
           }
           EOF
