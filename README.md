@@ -110,28 +110,16 @@ cp /tmp/bm-skills/skills/bm-code-management/SKILL.md ~/.cursor/rules/bm-code-man
 
 Cursor Settings > Rules で読み込まれていることを確認してください。
 
-### 7. 任意エージェント向け手動 install
+### 7. 直接 git clone（fallback）
 
-シェルスクリプト `install.sh` が同梱されています。
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/basemachina/skills/main/install.sh \
-  | sh -s -- bm-code-management --agent claude-code --scope user
-```
-
-引数は `<skill-name> [--agent <agent>] [--scope user|project] [--ref <git-ref>]`。`install.sh --help` で一覧を表示できます。
-
-### 8. 直接 git clone
-
-最も依存の少ない方法。
+`gh` が使えない環境向けの最終手段。
 
 ```bash
-# Claude Code ユーザースコープ
 git clone --depth 1 https://github.com/basemachina/skills.git /tmp/bm-skills
 cp -R /tmp/bm-skills/skills/bm-code-management ~/.claude/skills/
 ```
 
-`~/.claude/skills/` を各エージェントの skills ディレクトリに置き換えれば他のエージェントでも利用できます。
+install 先は各エージェントの skills ディレクトリ（`~/.claude/skills/` / `~/.agents/skills/` / `~/.cursor/rules/` / `.github/skills/` 等）に読み替えてください。
 
 ## アップデート
 
@@ -140,7 +128,7 @@ cp -R /tmp/bm-skills/skills/bm-code-management ~/.claude/skills/
 | `gh skill install` | `gh skill update bm-code-management` または `gh skill update --all` |
 | Claude Code plugin | `/plugin marketplace update basemachina` |
 | Gemini CLI | `gemini extensions update` |
-| 手動 / `install.sh` | 再度 install を実行（既存ディレクトリを削除してから） |
+| 手動 `git clone` | 再度 install を実行（既存ディレクトリを削除してから） |
 
 ## アンインストール
 
