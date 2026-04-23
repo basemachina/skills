@@ -1,0 +1,205 @@
+name: lint
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  frontmatter-and-structure:
+    name: SKILL.md frontmatter / line limits / nesting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate SKILL.md files
+        shell: bash
+        run: |
+          set -euo pipefail
+          failed=0
+
+          while IFS= read -r -d '' skill_md; do
+            echo "::group::$skill_md"
+
+            # 1. Line count ≤ 300
+            lines=$(wc -l < "$skill_md")
+            if [ "$lines" -gt 300 ]; then
+              echo "::error file=$skill_md::SKILL.md has $lines lines, exceeds 300-line limit"
+              failed=1
+            else
+              echo "✓ line count: $lines (limit 300)"
+            fi
+
+            # 2. Frontmatter must have name + description + allowed-tools
+            if ! head -20 "$skill_md" | grep -qE '^name: '; then
+              echo "::error file=$skill_md::frontmatter missing required field 'name'"
+              failed=1
+            fi
+            if ! head -20 "$skill_md" | grep -qE '^description: '; then
+              echo "::error file=$skill_md::frontmatter missing required field 'description'"
+              failed=1
+            fi
+            if ! head -20 "$skill_md" | grep -qE '^allowed-tools: '; then
+              echo "::error file=$skill_md::frontmatter missing required field 'allowed-tools'"
+              failed=1
+            fi
+
+            # 3. Reject Claude-specific frontmatter fields (cross-vendor minimal rule)
+            if head -20 "$skill_md" | grep -qE '^(when_to_use|paths|hooks|context|disable-model-invocation|argument-hint):'; then
+              echo "::error file=$skill_md::frontmatter contains Claude-specific field (not allowed in cross-vendor minimal design)"
+              head -20 "$skill_md" | grep -nE '^(when_to_use|paths|hooks|context|disable-model-invocation|argument-hint):'
+              failed=1
+            fi
+
+            # 4. Reject `!preprocessing` syntax (Claude Code only)
+            if grep -qE '^\s*!`[^`]*`' "$skill_md"; then
+              echo "::error file=$skill_md::SKILL.md uses Claude-specific !\`command\` preprocessing"
+              failed=1
+            fi
+
+            echo "::endgroup::"
+          done < <(find skills -name SKILL.md -print0)
+
+          if [ "$failed" -ne 0 ]; then
+            exit 1
+          fi
+
+      - name: Validate references nesting (advanced/ is the only 2-level path)
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Find .md files under references/ deeper than advanced/
+          while IFS= read -r -d '' f; do
+            depth=$(echo "$f" | tr -cd '/' | wc -c)
+            # expected depth for skills/<slug>/references/<file>.md = 3 slashes
+            # expected depth for skills/<slug>/references/advanced/<file>.md = 4 slashes
+            rel="${f#./}"
+            rel="${rel#skills/}"
+            slash_count=$(echo "$rel" | tr -cd '/' | wc -c)
+            # slash_count now: references/x.md → 1, references/advanced/x.md → 2
+            if [ "$slash_count" -gt 2 ]; then
+              echo "::error file=$f::references/ nesting exceeds 2 levels (advanced/ is the only allowed 2-level path)"
+              exit 1
+            fi
+            # Check 2-level path starts with advanced/
+            if [ "$slash_count" -eq 2 ] && [[ "$rel" != references/advanced/* ]]; then
+              echo "::error file=$f::2-level references/ path must start with advanced/"
+              exit 1
+            fi
+          done < <(find skills -path '*/references/*' -name '*.md' -print0)
+
+  skill-json-and-agents-marker:
+    name: skill.json schema / AGENTS.md managed-by marker
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install ajv-cli
+        run: npm install -g ajv-cli@5 ajv-formats@3
+
+      - name: Write skill.json schema
+        run: |
+          cat > /tmp/skill.schema.json <<'EOF'
+          {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "required": ["name", "version", "description"],
+            "additionalProperties": true,
+            "properties": {
+              "name": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]*$",
+                "description": "kebab-case slug matching the skill directory name"
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^\\d+\\.\\d+\\.\\d+(-[A-Za-z0-9.-]+)?$",
+                "description": "semver"
+              },
+              "description": {
+                "type": "string",
+                "minLength": 10
+              },
+              "compatibility": {
+                "oneOf": [
+                  { "type": "string" },
+                  { "type": "object" }
+                ]
+              },
+              "homepage": { "type": "string", "format": "uri" },
+              "license": { "type": "string" }
+            }
+          }
+          EOF
+
+      - name: Validate all skill.json files
+        shell: bash
+        run: |
+          set -euo pipefail
+          failed=0
+          while IFS= read -r -d '' f; do
+            echo "::group::$f"
+            if ! ajv validate -s /tmp/skill.schema.json -d "$f" --strict=false; then
+              failed=1
+            fi
+            echo "::endgroup::"
+          done < <(find skills -name skill.json -print0)
+          [ "$failed" -eq 0 ]
+
+      - name: Check managed-by marker ↔ skill.json version consistency
+        shell: bash
+        run: |
+          set -euo pipefail
+          failed=0
+          while IFS= read -r -d '' skill_json; do
+            skill_dir=$(dirname "$skill_json")
+            name=$(node -e "console.log(require('$PWD/$skill_json').name)")
+            version=$(node -e "console.log(require('$PWD/$skill_json').version)")
+            agents_md="$skill_dir/templates/AGENTS.md"
+            if [ ! -f "$agents_md" ]; then
+              echo "::notice file=$skill_json::skill has no templates/AGENTS.md, skipping marker check"
+              continue
+            fi
+            expected="<!-- managed-by: ${name}@${version} -->"
+            first_line=$(head -1 "$agents_md")
+            if [ "$first_line" != "$expected" ]; then
+              echo "::error file=$agents_md::managed-by marker mismatch"
+              echo "  expected: $expected"
+              echo "  got:      $first_line"
+              failed=1
+            else
+              echo "✓ $agents_md matches $expected"
+            fi
+          done < <(find skills -name skill.json -print0)
+          [ "$failed" -eq 0 ]
+
+  markdownlint:
+    name: markdownlint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Write markdownlint config
+        run: |
+          cat > /tmp/.markdownlint.json <<'EOF'
+          {
+            "default": true,
+            "MD013": false,
+            "MD033": false,
+            "MD034": false,
+            "MD041": false,
+            "MD007": { "indent": 2 }
+          }
+          EOF
+      - name: Run markdownlint
+        run: |
+          npx -y markdownlint-cli \
+            -c /tmp/.markdownlint.json \
+            'skills/**/*.md' 'README.md' 'CHANGELOG.md' 'CONTRIBUTING.md'

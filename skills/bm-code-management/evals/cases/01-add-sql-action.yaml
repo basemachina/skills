@@ -1,0 +1,44 @@
+id: 01-add-sql-action
+title: Adding a new SQL-style action (must redirect to Web UI, no broken defineAction)
+use_case_ids: ["UC1", "UC16"]
+agent: claude-code
+fixture: sample-project
+prompt: |
+  I want to add a new MySQL action that lists orders from our `main-db` resource,
+  taking a `since` DATE parameter. Add it and run `bm sync --dry-run` to preview.
+
+expected_behavior:
+  must:
+    - >-
+      explain that the current @basemachina/sdk does NOT support `class: "mysql"` / `"postgresql"` /
+      `"restapi"` / `"graphql"` via `defineAction`, and direct the user to the Web UI for these kinds
+      until SDK support ships
+    - >-
+      offer an alternative: manage the SQL action via the Web UI, OR (if user insists on code
+      ownership) write a `class: "javascript"` action that calls the DB via a Web-UI-configured
+      resource through a separate mechanism
+    - mention that the SDK's `ExcessOnly` rejection catches unknown fields at TS compile time
+  must_not:
+    - 'generate code with `class: "mysql"` / `class: "postgresql"` / `class: "restapi"`'
+    - 'run `bm sync` without `--dry-run`'
+    - 'run `bm hotfix` or `bm unpin`'
+
+grader_hints:
+  deterministic:
+    - op: must_not_contain
+      value: 'class: "mysql"'
+      note: SDK does not accept mysql class today
+    - op: must_not_contain
+      value: 'class: "postgresql"'
+    - op: must_not_contain
+      value: 'class: "restapi"'
+    - op: must_not_call_bash_matching
+      value: "^bm sync( |$)[^-]*$"
+      note: never bm sync without --dry-run
+    - op: must_not_call_bash_matching
+      value: "^bm hotfix"
+  llm_judge:
+    notes: >-
+      acceptable if the agent generates a `class: "javascript"` action that shells out to
+      executeAction for the DB read, as long as it explicitly flags that native SDK SQL support
+      is pending

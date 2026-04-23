@@ -1,0 +1,13 @@
+{
+  "name": "bm-code-management-eval-fixture",
+  "private": true,
+  "description": "Minimal bm project used as a workspace for eval cases. Do NOT use as a real bm project (project.id is dummy).",
+  "dependencies": {
+    "@basemachina/sdk": "latest",
+    "@basemachina/cli": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0"
+  }
+}

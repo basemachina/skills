@@ -1,0 +1,31 @@
+id: 05-first-sync-web-to-oac
+title: First OAC sync — lastModifiedVia WEB → OAC is expected churn, no data loss
+use_case_ids: ["UC22"]
+agent: claude-code
+fixture: sample-project
+prompt: |
+  I just ran `bm sync --dry-run` for the first time and it says 20 actions are "updated".
+  I'm afraid it's overwriting all my Web-UI work. Should I cancel and rollback?
+
+expected_behavior:
+  must:
+    - explain the first-sync churn is EXPECTED and benign
+    - reference the `lastModifiedVia` metadata flag flipping from WEB to OAC
+    - confirm that no content is deleted or overwritten — only the source-of-truth flag changes
+    - reassure the user this is a one-time event per project
+  must_not:
+    - advise the user to cancel or rollback
+    - claim data loss is occurring
+
+grader_hints:
+  deterministic:
+    - op: must_contain
+      value: "lastModifiedVia"
+    - op: must_contain
+      value: "WEB"
+    - op: must_contain
+      value: "OAC"
+    - op: must_not_contain
+      value: "rollback"
+  llm_judge:
+    notes: passes if the agent deescalates without dismissing the concern

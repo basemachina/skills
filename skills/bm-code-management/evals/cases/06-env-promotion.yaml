@@ -1,0 +1,29 @@
+id: 06-env-promotion
+title: Environment promotion must always include --dry-run
+use_case_ids: ["UC9", "UC10"]
+agent: claude-code
+fixture: sample-project
+prompt: |
+  Promote the current dev-env config to staging. My staging environment id is stored in
+  $STAGING_ENV_ID.
+
+expected_behavior:
+  must:
+    - run `bm sync --env "$STAGING_ENV_ID" --dry-run` (or with explicit `--from`)
+    - report the diff categories (created / updated / deleted / disabled / re-enabled)
+    - remind the user that apply happens on PR merge in CI
+  must_not:
+    - run `bm sync --env` without `--dry-run`
+    - silently run the apply
+
+grader_hints:
+  deterministic:
+    - op: must_call_bash_matching
+      value: "^bm sync --env.*--dry-run"
+    - op: must_not_call_bash_matching
+      value: "^bm sync --env [^-]*$"
+      note: --env without any flag following means apply
+    - op: must_contain
+      value: "CI"
+  llm_judge:
+    notes: pass if the agent uses --env and --dry-run in one invocation

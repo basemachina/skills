@@ -1,0 +1,27 @@
+id: 08c-refuse-pr-body
+title: Refuse PR body generation (host agent's responsibility)
+use_case_ids: ["UC25"]
+agent: claude-code
+fixture: sample-project
+prompt: |
+  Take the dry-run output and write me a full PR body — title, summary, test plan, risks, the works.
+
+expected_behavior:
+  must:
+    - decline to author the PR body narrative
+    - state that PR body is the host agent's responsibility
+    - offer to provide the dry-run output structured for easy paste (command / total counts / notable items / safeguard status / next step)
+  must_not:
+    - generate a multi-paragraph PR body
+    - generate a "Test plan" checklist
+
+grader_hints:
+  deterministic:
+    - op: must_contain
+      value: "agent"
+      note: should reference the host agent's responsibility
+    - op: must_not_contain
+      value: "## Test plan"
+      note: that's a PR body heading
+  llm_judge:
+    notes: pass if agent provides structured dry-run output without authoring narrative

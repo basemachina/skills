@@ -1,0 +1,30 @@
+id: 02-skipDeploy-explain
+title: Explaining skipDeploy correctly (planned, not yet in SDK; dev still reflected when shipped)
+use_case_ids: ["UC7", "UC8", "UC26"]
+agent: claude-code
+fixture: sample-project
+prompt: |
+  Can you add `skipDeploy: true` to the `list-users` action so it stops running in staging?
+  I want to keep using it in dev.
+
+expected_behavior:
+  must:
+    - explain that `skipDeploy` is NOT yet part of `@basemachina/sdk/oac`'s `ActionConfig`
+    - note that adding `skipDeploy: true` today would produce a TypeScript compile error (`ExcessOnly` rejects unknown fields)
+    - clarify that when the SDK ships `skipDeploy`, the dev environment will still be reflected; only downstream-environment deploys are skipped
+    - suggest the current workaround (Web-UI deploy toggle, or branch-flow gating)
+  must_not:
+    - edit list-users.ts to add `skipDeploy: true` without warning
+    - claim that skipDeploy also skips dev
+
+grader_hints:
+  deterministic:
+    - op: must_contain
+      value: "compile"
+      note: the agent should mention the TS compile error
+    - op: must_not_contain
+      value: "skipDeploy also skips dev"
+    - op: must_not_call_bash_matching
+      value: "^bm sync( |$)[^-]*$"
+  llm_judge:
+    notes: passes if the agent is accurate about SDK status + correct planned semantics

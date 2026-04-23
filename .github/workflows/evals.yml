@@ -1,0 +1,167 @@
+name: evals
+
+# Phase 1: validate that eval cases conform to the schema defined in
+# `skills/<slug>/evals/grader.md`. We do NOT run LLM executions here yet.
+#
+# Phase 1.5 will extend this workflow with a Claude Code headless runner that
+# executes each case against its fixture and scores the agent's response.
+# The YAML schema is forward-compatible so existing cases will continue to work.
+#
+# Blocker design: only deterministic schema failures block the PR. LLM-judge
+# results, when they land in 1.5, will be PR-commented but advisory.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  cases-schema:
+    name: Validate eval cases YAML schema
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install tooling
+        run: npm install -g ajv-cli@5 ajv-formats@3 js-yaml@4
+
+      - name: Write case schema
+        run: |
+          cat > /tmp/case.schema.json <<'EOF'
+          {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "required": ["id", "title", "use_case_ids", "agent", "fixture", "prompt", "expected_behavior", "grader_hints"],
+            "additionalProperties": true,
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[0-9]{2}[a-z]?-[a-z0-9-]+$"
+              },
+              "title": { "type": "string", "minLength": 5 },
+              "use_case_ids": {
+                "type": "array",
+                "items": { "type": "string", "pattern": "^UC[0-9]+$" },
+                "minItems": 1
+              },
+              "agent": { "type": "string", "enum": ["claude-code", "codex-cli"] },
+              "fixture": { "type": "string", "minLength": 1 },
+              "prereq_fixtures": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["path", "content"],
+                  "properties": {
+                    "path": { "type": "string" },
+                    "content": { "type": "string" }
+                  }
+                }
+              },
+              "prompt": { "type": "string", "minLength": 10 },
+              "expected_behavior": {
+                "type": "object",
+                "required": ["must", "must_not"],
+                "properties": {
+                  "must":     { "type": "array", "items": { "type": "string" } },
+                  "must_not": { "type": "array", "items": { "type": "string" } }
+                }
+              },
+              "grader_hints": {
+                "type": "object",
+                "required": ["deterministic"],
+                "properties": {
+                  "deterministic": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["op", "value"],
+                      "properties": {
+                        "op": {
+                          "type": "string",
+                          "enum": ["must_contain", "must_not_contain", "must_call_bash_matching", "must_not_call_bash_matching"]
+                        },
+                        "value": { "type": "string", "minLength": 1 },
+                        "note":  { "type": "string" }
+                      },
+                      "additionalProperties": false
+                    }
+                  },
+                  "llm_judge": {
+                    "type": "object",
+                    "properties": {
+                      "notes": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+          EOF
+
+      - name: Validate every case YAML
+        shell: bash
+        run: |
+          set -euo pipefail
+          failed=0
+          count=0
+          while IFS= read -r -d '' yaml; do
+            count=$((count+1))
+            # Convert YAML → JSON on disk (avoid stdin round-tripping of multi-line content)
+            node -e "
+              const y=require('js-yaml');
+              const fs=require('fs');
+              fs.writeFileSync('/tmp/case.json', JSON.stringify(y.load(fs.readFileSync('$yaml','utf8')), null, 2));
+            "
+            # Verify filename id matches YAML id field
+            fname=$(basename "$yaml" .yaml)
+            yaml_id=$(node -e "console.log(require('js-yaml').load(require('fs').readFileSync('$yaml','utf8')).id)")
+            if [ "$fname" != "$yaml_id" ]; then
+              echo "::error file=$yaml::filename '$fname' does not match id field '$yaml_id'"
+              failed=1
+            fi
+            if ! ajv validate -s /tmp/case.schema.json -d /tmp/case.json --strict=false; then
+              echo "::error file=$yaml::schema validation failed"
+              failed=1
+            else
+              echo "✓ $yaml"
+            fi
+          done < <(find skills -path '*/evals/cases/*.yaml' -print0)
+
+          echo "Validated $count case files"
+          if [ "$failed" -ne 0 ]; then
+            exit 1
+          fi
+          if [ "$count" -lt 1 ]; then
+            echo "::error::no eval cases found"
+            exit 1
+          fi
+
+  fixtures-exist:
+    name: Verify referenced fixtures exist
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check fixture references
+        shell: bash
+        run: |
+          set -euo pipefail
+          failed=0
+          while IFS= read -r -d '' yaml; do
+            fixture=$(grep -E '^fixture:' "$yaml" | head -1 | sed 's/^fixture: *//' | tr -d '"')
+            if [ -z "$fixture" ]; then
+              continue
+            fi
+            # resolve relative to the evals/ directory two levels up from case file
+            evals_dir=$(dirname "$(dirname "$yaml")")
+            fixture_path="$evals_dir/fixtures/$fixture"
+            if [ ! -d "$fixture_path" ]; then
+              echo "::error file=$yaml::fixture '$fixture' not found at $fixture_path"
+              failed=1
+            fi
+          done < <(find skills -path '*/evals/cases/*.yaml' -print0)
+          [ "$failed" -eq 0 ]

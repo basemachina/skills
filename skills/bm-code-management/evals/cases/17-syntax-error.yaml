@@ -1,0 +1,40 @@
+id: 17-syntax-error
+title: TypeScript compile error — agent reads .d.ts, runs tsc --noEmit
+use_case_ids: ["UC17"]
+agent: claude-code
+fixture: sample-project
+prereq_fixtures:
+  - path: src/actions/broken.ts
+    content: |
+      import { defineAction } from "@basemachina/sdk/oac";
+      export const brokenAction = defineAction({
+        id: "broken",
+        name: "Broken example",
+        class: "javascript_server",  // wrong literal, real SDK uses "javascript"
+        code: "export default async () => ({});",
+      });
+prompt: |
+  `bm sync --dry-run` failed with a TypeScript compile error at `src/actions/broken.ts`.
+  Please diagnose and fix.
+
+expected_behavior:
+  must:
+    - 'run `npx tsc --noEmit` (or `tsc --noEmit`) to surface all type errors'
+    - 'read `node_modules/@basemachina/sdk/dist/oac/index.d.ts` to confirm the real `class` literal'
+    - 'identify `class: "javascript_server"` as the wrong literal; fix to `class: "javascript"`'
+    - 're-run `bm sync --dry-run` after the fix'
+  must_not:
+    - guess at the fix without checking the SDK types
+    - 'run `bm sync` without `--dry-run` to "test" the fix'
+
+grader_hints:
+  deterministic:
+    - op: must_call_bash_matching
+      value: "tsc --noEmit"
+    - op: must_contain
+      value: "javascript"
+      note: agent must identify the correct literal
+    - op: must_not_call_bash_matching
+      value: "^bm sync( |$)[^-]*$"
+  llm_judge:
+    notes: pass if the agent consults .d.ts before proposing the fix

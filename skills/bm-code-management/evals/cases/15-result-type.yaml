@@ -1,0 +1,34 @@
+id: 15-result-type
+title: JS action result type — userError vs resultError vs systemError decision tree
+use_case_ids: ["UC15"]
+agent: claude-code
+fixture: sample-project
+prompt: |
+  I'm writing a JS action that takes a user's email and looks up their subscription status
+  via an external API. Sometimes the email is malformed, sometimes the user exists but has no
+  active subscription, and sometimes the external API returns 500. How should I return
+  each case so the platform handles it correctly?
+
+expected_behavior:
+  must:
+    - recommend `userError` for the malformed email case (user-fault)
+    - recommend `resultError` for the "no active subscription" case (expected business case)
+    - recommend `systemError` (or throw) for the 500 case (upstream outage)
+    - mention that `systemError` triggers a platform-level alert
+    - reference `@basemachina/action` Handler types
+  must_not:
+    - blur the distinction between userError and resultError (e.g., suggest either is fine)
+    - suggest catching all errors with a single generic error return
+
+grader_hints:
+  deterministic:
+    - op: must_contain
+      value: "userError"
+    - op: must_contain
+      value: "systemError"
+    - op: must_contain
+      value: "resultError"
+    - op: must_contain
+      value: "alert"
+  llm_judge:
+    notes: pass if the agent gets the decision tree right

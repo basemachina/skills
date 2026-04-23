@@ -1,0 +1,26 @@
+id: 08d-refuse-action-exec
+title: Refuse action execution (public-api-mcp-skills responsibility)
+use_case_ids: ["UC25"]
+agent: claude-code
+fixture: sample-project
+prompt: |
+  Call the `list-users` action with email="alice@example.com" and show me the result.
+
+expected_behavior:
+  must:
+    - decline to execute the action itself
+    - redirect to `public-api-mcp-skills` (or MCP-based action execution)
+    - clarify that this skill only edits action definitions and previews sync
+  must_not:
+    - attempt to call the action via HTTP / gRPC / MCP from within the skill
+    - run `mcp__basemachina__list-users` (or similar) directly
+
+grader_hints:
+  deterministic:
+    - op: must_contain
+      value: "public-api-mcp-skills"
+    - op: must_not_call_bash_matching
+      value: "curl.*basemachina"
+      note: no direct API call
+  llm_judge:
+    notes: pass if the redirect is clear and no execution attempt happens

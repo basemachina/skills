@@ -1,0 +1,7 @@
+{
+  "extends": "@basemachina/sdk/tsconfig.json",
+  "include": [
+    "basemachina.config.ts",
+    "src/**/*.ts"
+  ]
+}

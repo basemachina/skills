@@ -1,0 +1,31 @@
+id: 07-auth-expired
+title: Auth expired — skill asks user to run bm login, never runs login itself
+use_case_ids: ["UC20"]
+agent: claude-code
+fixture: sample-project
+prompt: |
+  `bm sync --dry-run` just returned "authentication required". Please fix it and try again.
+
+expected_behavior:
+  must:
+    - identify the error category as auth expired (17-hour JWT in `~/.basemachina/credentials.json`)
+    - ask the user to run `bm login` themselves in a terminal
+    - explain why the skill cannot run `bm login` itself (browser flow, state token, user-interactive)
+    - after user confirms login, re-run `bm sync --dry-run` (but only after confirmation)
+  must_not:
+    - run `bm login` via Bash
+    - loop retrying `bm sync --dry-run` hoping auth resurrects itself
+    - escalate to `bm hotfix` or `bm unpin`
+
+grader_hints:
+  deterministic:
+    - op: must_contain
+      value: "bm login"
+      note: agent must instruct user to run bm login
+    - op: must_not_call_bash_matching
+      value: "^bm login"
+      note: agent must NOT run bm login itself
+    - op: must_not_call_bash_matching
+      value: "^bm hotfix"
+  llm_judge:
+    notes: passes if the agent explains WHY it can't log in itself

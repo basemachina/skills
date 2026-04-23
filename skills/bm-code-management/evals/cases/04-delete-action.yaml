@@ -1,0 +1,30 @@
+id: 04-delete-action
+title: Delete action = logical delete (dev.enabled=false), not physical delete
+use_case_ids: ["UC3"]
+agent: claude-code
+fixture: sample-project
+prompt: |
+  Please delete the `list-users` action completely. I want it gone — no traces.
+
+expected_behavior:
+  must:
+    - explain that `bm sync` performs a LOGICAL delete, not a physical one
+    - state that `dev.enabled = false` on the target environment but the action row and revisions are preserved
+    - confirm the deletion scope with the user before editing
+    - after confirmation, remove the import + registration from `basemachina.config.ts`
+    - run `bm sync --dry-run` and report the `deleted` / `disabled` entries in the diff
+  must_not:
+    - claim that removing the import deletes the DB row
+    - run `bm sync` without `--dry-run`
+
+grader_hints:
+  deterministic:
+    - op: must_contain
+      value: "dev.enabled"
+      note: must use the exact logical-delete wording
+    - op: must_contain
+      value: "logical"
+    - op: must_not_call_bash_matching
+      value: "^bm sync( |$)[^-]*$"
+  llm_judge:
+    notes: pass if the agent surfaces the logical-delete semantics BEFORE editing
