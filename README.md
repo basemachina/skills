@@ -70,6 +70,30 @@ git add AGENTS.md && git commit -m "chore: add AGENTS.md from bm-code-management
 3. **AGENTS.md（常時）と SKILL.md（特定ワークフロー）の責務分離** — Vercel の実測で 100 % 達成パターン
 4. **Retrieval-first** — CLI 引数や SDK 型は skill 本文に埋め込まず、エージェントが `bm --help` や `*.d.ts` を都度取得する前提
 
+## Dogfooding とフィードバック
+
+社内 `oac-poc` リポジトリで先行 dogfooding を行い、Slack `p1776682725.424589` （コード管理フィードバックスレ）に以下のフォーマットで投稿する:
+
+```
+[eval-case] summary / prompt / expected / actual
+```
+
+週次レビューで `evals/cases/` に YAML ケース化し、回帰防止の Gate として CI に組み込む。Phase 1 は手動、Phase 2 で Slack bot 経由の自動化を検討。
+
+## ロードマップ
+
+| Phase | 時期 | 主な内容 |
+| --- | --- | --- |
+| **Phase 1** (v1.0.0) | 2026-04 | 初期リリース。`bm-code-management` skill + `templates/AGENTS.md` + evals + lint/evals CI |
+| **Phase 1.1** | 2-4 週後 | `VoltAgent/awesome-agent-skills` への掲載マージ、Slack → eval case 化運用の定着 |
+| **Phase 1.5** | CLI PR2 / PR4 リリース後 | cross-vendor smoke CI（Codex CLI headless）、evals を LLM 実行で advisory 評価、`bm sync --env` / 3-branch ops の実装追従 |
+| **Phase 2** (v2.0.0) | SDK 拡張後 | `_shared/` 共有資産、`scripts/build-agents-md.sh` 本実装、`templates/AGENTS.md.partial.md`、`bm-hotfix` / `bm-review` など追加 skill |
+
+## 外部登録
+
+- `VoltAgent/awesome-agent-skills` への掲載 PR を提出する（Phase 1.1 でマージ想定）
+- `docs.basemachina.com/code-management` に install 手順を追記する
+
 ## 関連リンク
 
 - 公式ドキュメント: https://docs.basemachina.com/code-management
