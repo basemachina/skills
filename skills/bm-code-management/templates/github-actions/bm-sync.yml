@@ -1,0 +1,109 @@
+# CI template for BaseMachina code management.
+#
+# Copy to `.github/workflows/bm-sync.yml` in your bm project repo.
+# Set the following repo variables / secrets in GitHub Settings:
+#   - GITHUB_TOKEN           (provided by default, used to pull @basemachina packages via npm.pkg.github.com)
+#   - vars.STG_ENV_ID        (staging environment id, copy from Web UI)
+#   - vars.PRD_ENV_ID        (production environment id, copy from Web UI)
+#   - vars.DEV_ENV_ID        (dev environment id, if you use explicit --from on stg promotion)
+#
+# PR events run `bm sync --dry-run` and leave the apply to the merge event.
+# Branch dispatch determines which env to target.
+
+name: bm-sync
+
+on:
+  pull_request:
+    branches: [main, stg, prd]
+  push:
+    branches: [main, stg, prd]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@basemachina'
+
+      - name: Install dependencies
+        run: npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: TypeScript type check
+        run: npx tsc --noEmit
+
+      - name: Get BaseMachina OIDC token
+        id: oidc
+        run: |
+          TOKEN=$(curl -sSLf \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=https://basemachina.com" \
+            | jq -r .value)
+          echo "::add-mask::$TOKEN"
+          echo "token=$TOKEN" >> "$GITHUB_OUTPUT"
+
+      - name: bm sync --dry-run (on PR)
+        if: github.event_name == 'pull_request'
+        env:
+          BM_OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+          STG_ENV_ID: ${{ vars.STG_ENV_ID }}
+          PRD_ENV_ID: ${{ vars.PRD_ENV_ID }}
+          DEV_ENV_ID: ${{ vars.DEV_ENV_ID }}
+        run: |
+          set -euo pipefail
+          case "${GITHUB_BASE_REF}" in
+            main)
+              npx bm sync --dry-run | tee /tmp/bm-sync.txt
+              ;;
+            stg)
+              npx bm sync --env "$STG_ENV_ID" --from "$DEV_ENV_ID" --dry-run | tee /tmp/bm-sync.txt
+              ;;
+            prd)
+              npx bm sync --env "$PRD_ENV_ID" --from "$STG_ENV_ID" --dry-run | tee /tmp/bm-sync.txt
+              ;;
+          esac
+
+      - name: Comment dry-run result on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const body = "```\n" + fs.readFileSync('/tmp/bm-sync.txt', 'utf8') + "\n```";
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `### bm sync --dry-run\n${body}`,
+            });
+
+      - name: bm sync apply (on push)
+        if: github.event_name == 'push'
+        env:
+          BM_OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+          STG_ENV_ID: ${{ vars.STG_ENV_ID }}
+          PRD_ENV_ID: ${{ vars.PRD_ENV_ID }}
+          DEV_ENV_ID: ${{ vars.DEV_ENV_ID }}
+        run: |
+          set -euo pipefail
+          case "${GITHUB_REF_NAME}" in
+            main)
+              npx bm sync
+              ;;
+            stg)
+              npx bm sync --env "$STG_ENV_ID" --from "$DEV_ENV_ID"
+              ;;
+            prd)
+              npx bm sync --env "$PRD_ENV_ID" --from "$STG_ENV_ID"
+              ;;
+          esac

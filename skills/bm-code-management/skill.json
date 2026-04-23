@@ -1,0 +1,12 @@
+{
+  "name": "bm-code-management",
+  "version": "1.0.0",
+  "description": "Edit BaseMachina actions and preview changes with `bm sync --dry-run`. Apply is CI-only.",
+  "compatibility": {
+    "bm-cli": ">=0.1.0",
+    "claude-code": ">=2026-02",
+    "codex-cli": ">=2026-02"
+  },
+  "homepage": "https://github.com/basemachina/skills/tree/main/skills/bm-code-management",
+  "license": "Apache-2.0"
+}
