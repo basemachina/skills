@@ -25,7 +25,7 @@ allowed-tools: Bash(bm sync:*), Bash(bm --help:*), Bash(bm --version), Bash(npx 
 ## Pre-flight
 
 1. `basemachina.config.ts` がカレントディレクトリのルートに存在することを確認する。無ければ `--config <path>` 指定またはプロジェクトルートへの移動を依頼する。
-2. `bm --version` が成功することを確認する。失敗時は `npm i -D @basemachina/cli` を依頼する（未インストールのケースは skill 側でインストールしない）。
+2. `@basemachina/sdk` / `@basemachina/cli` のインストール状態を確認する（CLI は `bm --version` の成功、SDK は `package.json` の `dependencies` / `devDependencies` への記載で判定）。未インストールのパッケージがあればユーザーに「インストールしますか？」と確認し、yes の場合に限り skill が `npm i -D @basemachina/sdk @basemachina/cli` を実行する。
 3. `npm outdated @basemachina/sdk @basemachina/cli` で新バージョンの有無を確認する。新バージョンがあればユーザーに「更新しますか？」と確認し、yes の場合に限り skill が `npm i @basemachina/sdk@latest @basemachina/cli@latest` を実行する。`package.json` を Read して devDependency に入っているパッケージには `-D` を付ける。
 
 ## 認証切れ
