@@ -1,7 +1,7 @@
 ---
 name: bm-code-management
 description: ユーザーが BaseMachina でアクション定義（`defineAction` / `defineConfig`）を TypeScript で編集し、`bm sync` で差分をプレビューするときに使う skill。アクション実行は扱わない。公式ドキュメント: https://docs.basemachina.com/preview/code_management/
-allowed-tools: Bash(bm sync:*), Bash(bm --help:*), Bash(bm --version), Read, Grep, Glob, Edit, Write
+allowed-tools: Bash(bm sync:*), Bash(bm --help:*), Bash(bm --version), Bash(npx tsc:*), Bash(npm outdated:*), Bash(npm i:*), Read, Grep, Glob, Edit, Write
 ---
 
 # BaseMachina コード管理 skill
@@ -17,13 +17,16 @@ allowed-tools: Bash(bm sync:*), Bash(bm --help:*), Bash(bm --version), Read, Gre
 ## ワークフロー
 
 1. **編集**: `basemachina.config.ts` と既存の `src/actions/*.ts` を Read してパターンを把握し、必要な変更を Edit / Write する。書き方は公式ドキュメントの SDK セクションと `.d.ts` を確認する。
-2. **プレビュー**: `bm sync --dry` を Bash で実行する。フラグの詳細は `bm sync --help` を参照する。出力は実行したコマンド・変更件数・注目すべきアクション ID を構造化してユーザーに返す。
-3. **引き渡し**: 差分をユーザーに返す。以降の進め方（PR 作成の要否、apply のタイミング等）はユーザーに委ねる。
+2. **品質チェック**:
+   - `npx tsc --noEmit` で型エラーがないことを確認する。エラーが出たら「型エラー」セクションの手順で解消してから先に進む。
+   - `bm sync --dry` を Bash で実行し、変更したアクション ID と差分種別（create / update / no-op）が編集意図と一致しているかを確認する。意図と異なる差分が出たら引き渡さず編集に戻る。フラグの詳細は `bm sync --help` を参照する。
+3. **引き渡し**: 実行したコマンド・変更件数・注目すべきアクション ID を構造化してユーザーに返す。以降の進め方（PR 作成の要否、apply のタイミング等）はユーザーに委ねる。
 
 ## Pre-flight
 
 1. `basemachina.config.ts` がカレントディレクトリのルートに存在することを確認する。無ければ `--config <path>` 指定またはプロジェクトルートへの移動を依頼する。
-2. `bm --version` が成功することを確認する。失敗時は `npm i -D @basemachina/cli` を依頼する（skill 自身はインストールしない）。
+2. `bm --version` が成功することを確認する。失敗時は `npm i -D @basemachina/cli` を依頼する（未インストールのケースは skill 側でインストールしない）。
+3. `npm outdated @basemachina/sdk @basemachina/cli` で新バージョンの有無を確認する。新バージョンがあればユーザーに「更新しますか？」と確認し、yes の場合に限り skill が `npm i @basemachina/sdk@latest @basemachina/cli@latest` を実行する。`package.json` を Read して devDependency に入っているパッケージには `-D` を付ける。
 
 ## 認証切れ
 
