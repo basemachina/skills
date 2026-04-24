@@ -4,22 +4,19 @@
     "name": "BaseMachina"
   },
   "metadata": {
-    "description": "BaseMachina 用 Agent Skill コレクション",
-    "version": "1.0.0"
+    "description": "BaseMachina 用 Agent Skill コレクション"
   },
   "plugins": [
     {
       "name": "bm-skills",
-      "source": {
-        "source": "github",
-        "repo": "basemachina/skills"
-      },
+      "source": "./",
       "description": "BaseMachina のコード管理ワークフローを自動化する skill 群",
       "version": "1.0.0",
       "license": "Apache-2.0",
       "homepage": "https://github.com/basemachina/skills",
       "repository": "https://github.com/basemachina/skills",
       "keywords": ["basemachina", "code-management"],
+      "skills": "./skills/",
       "strict": false
     }
   ]
