@@ -1,7 +1,7 @@
 ---
 name: bm-code-management
-description: ユーザーが BaseMachina でアクション定義（`defineAction` / `defineConfig`）を TypeScript で編集し、`bm sync` で差分をプレビューするときに使う skill。アクション実行は扱わない。公式ドキュメント: https://docs.basemachina.com/preview/code_management/
-allowed-tools: Bash(bm sync:*), Bash(bm --help:*), Bash(bm --version), Bash(npx tsc:*), Bash(npm outdated:*), Bash(npm i:*), Bash(yarn add:*), Bash(yarn outdated:*), Bash(yarn tsc:*), Bash(pnpm add:*), Bash(pnpm outdated:*), Bash(pnpm exec:*), Bash(bun add:*), Bash(bun outdated:*), Bash(bunx tsc:*), Read, Grep, Glob, Edit, Write
+description: "ユーザーが BaseMachina でアクション定義（`defineAction` / `defineConfig`）を TypeScript で編集し、`bm sync` で差分をプレビューするときに使う skill。アクション実行は扱わない。公式ドキュメント: https://docs.basemachina.com/preview/code_management/"
+allowed-tools: "Bash(bm sync:*), Bash(bm --help:*), Bash(bm --version), Bash(npx tsc:*), Bash(npm outdated:*), Bash(npm i:*), Bash(yarn add:*), Bash(yarn outdated:*), Bash(yarn tsc:*), Bash(pnpm add:*), Bash(pnpm outdated:*), Bash(pnpm exec:*), Bash(bun add:*), Bash(bun outdated:*), Bash(bunx tsc:*), Read, Grep, Glob, Edit, Write"
 ---
 
 # BaseMachina コード管理 skill
