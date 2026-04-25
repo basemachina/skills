@@ -1,19 +1,18 @@
 ---
 name: bm-code-management
-description: "BaseMachina のコード管理を扱うときの skill。`defineAction` / `defineConfig` の TypeScript 設定編集、JavaScript アクションの**コード本体**（`./js-action-codes/*.ts`）の作成、`bm sync --dry` での差分プレビュー、GitHub Actions / OIDC を使った環境別反映運用までを 1 つのドメインとして扱う。アクション実行は扱わない。詳細は領域ごとに `references/ts-config.md` / `references/js-action.md` / `references/cicd.md` に分割。公式ドキュメント: https://docs.basemachina.com/preview/code_management/"
-allowed-tools: "Bash(bm sync --dry:*) Bash(bm --help:*) Bash(bm --version) Bash(npx tsc:*) Bash(yarn tsc:*) Bash(pnpm exec tsc:*) Bash(bunx tsc:*) Bash(npm i:*) Bash(yarn add:*) Bash(pnpm add:*) Bash(bun add:*) Bash(npm outdated:*) Bash(yarn outdated:*) Bash(pnpm outdated:*) Bash(bun outdated:*) Bash(gh workflow:*) Bash(gh run list:*) Bash(gh secret list:*) Read Grep Glob Edit Write"
+description: "BaseMachina のコード管理を扱うときの skill。`defineAction` / `defineConfig` の TypeScript 設定編集、JavaScript アクションの**コード本体**（`./js-action-codes/*.ts`）の作成・編集、`bm sync --dry` での差分プレビューを 1 つのドメインとして扱う。アクション実行や本番反映は扱わない。詳細は領域ごとに `references/ts-config.md` / `references/js-action.md` に分割。公式ドキュメント: https://docs.basemachina.com/preview/code_management/"
+allowed-tools: "Bash(bm sync --dry:*) Bash(bm --help:*) Bash(bm --version) Bash(npx tsc:*) Bash(yarn tsc:*) Bash(pnpm exec tsc:*) Bash(bunx tsc:*) Bash(npm i:*) Bash(yarn add:*) Bash(pnpm add:*) Bash(bun add:*) Bash(npm outdated:*) Bash(yarn outdated:*) Bash(pnpm outdated:*) Bash(bun outdated:*) Read Grep Glob Edit Write"
 ---
 
 # BaseMachina コード管理 skill
 
-コマンド・フラグ・型・YAML の詳細は記憶で書かず、公式ドキュメント（<https://docs.basemachina.com/preview/code_management/>）と SDK / runtime の型定義（`node_modules/@basemachina/sdk` / `@basemachina/action`）を都度確認する。
+コマンド・フラグ・型の詳細は記憶で書かず、公式ドキュメント（<https://docs.basemachina.com/preview/code_management/>）と SDK / runtime の型定義（`node_modules/@basemachina/sdk` / `@basemachina/action`）を都度確認する。
 
 ## いつ使うか
 
 - `defineAction` / `defineConfig` を新規作成・編集する
 - JavaScript アクションのコード本体を新規作成・編集する
 - `bm sync --dry` で差分をプレビューしてユーザーに示す
-- GitHub Actions / OIDC を含む CI/CD 運用（環境別反映含む）を構築・改修する
 - 認証切れや TypeScript 型エラーから復旧する
 
 ## いつ使わないか
@@ -29,9 +28,8 @@ allowed-tools: "Bash(bm sync --dry:*) Bash(bm --help:*) Bash(bm --version) Bash(
 | --- | --- |
 | `basemachina.config.ts` / `defineAction` / `defineConfig` を編集 | [`references/ts-config.md`](references/ts-config.md) |
 | `./js-action-codes/*.ts` の中身を書く・直す（`executeAction` / `createActionJob` / `wait` / `ResultError` など） | [`references/js-action.md`](references/js-action.md) |
-| GitHub Actions ワークフロー、OIDC、`prd` への環境別反映、`<env-id>` / `--from` 指定 | [`references/cicd.md`](references/cicd.md) |
 
-複数領域に跨る場合（例: TS 設定で JS アクションを宣言し、CI で配信する）は、該当する reference を順次 Read する。
+複数領域に跨る場合（例: TS 設定で JS アクションを宣言し、コード本体も書く）は、該当する reference を順次 Read する。
 
 ## 共通: Pre-flight
 
@@ -66,20 +64,16 @@ allowed-tools: "Bash(bm sync --dry:*) Bash(bm --help:*) Bash(bm --version) Bash(
 - **エージェントから実行できるのは `bm sync --dry` のみ**（`allowed-tools` で制限）
 - 差分の意図が編集と一致するかを必ずユーザーに引き渡し、実反映は CI またはユーザー手動操作に委ねる
 - フラグ詳細は `bm sync --help` または <https://docs.basemachina.com/preview/code_management/cli/sync/> を参照する
-- 環境 ID 指定（`<env-id>` / `--from <src-env-id>`）の取り扱いは [`references/cicd.md`](references/cicd.md) を参照する
 
 ## 共通: 認証
 
 `bm sync --dry` がローカルで `authentication required` 等で失敗したら、ユーザーに `bm login` の実行を依頼する。`bm login` はブラウザを開く interactive フローで、エージェントから実行すると state トークンの受け渡しで破綻する。
-
-CI 上の認証エラー（OIDC 関連）は [`references/cicd.md`](references/cicd.md) § 認証エラーの切り分け に従う。
 
 ## 参照先
 
 - 公式ドキュメント（コード管理トップ）: <https://docs.basemachina.com/preview/code_management/>
 - 設定ファイル: <https://docs.basemachina.com/preview/code_management/configuration/>
 - `bm sync` CLI: <https://docs.basemachina.com/preview/code_management/cli/sync/>
-- CI/CD: <https://docs.basemachina.com/preview/code_management/ci_cd/>
 - JS アクション: <https://docs.basemachina.com/action/datasources/javascript_action/>
 - SDK の型定義: `node_modules/@basemachina/sdk/dist/oac/index.d.ts`
 - JS アクション runtime 型: `node_modules/@basemachina/action/dist/*.d.ts`
