@@ -9,7 +9,7 @@ BaseMachina 用の [Agent Skill](https://agentskills.io/specification) を配布
 
 | skill | 概要 |
 | --- | --- |
-| [`bm-code-management`](skills/bm-code-management/) | `defineAction` / `defineConfig` を TypeScript で編集し、`bm sync` で差分をプレビューする skill（アクション実行は扱わない） |
+| [`bm-code-management`](skills/bm-code-management/) | BaseMachina のコード管理を扱う skill。`defineAction` / `defineConfig` の TS 設定編集、JavaScript アクションのコード本体（`./js-action-codes/*.ts`）作成、`bm sync --dry` での差分プレビュー、GitHub Actions / OIDC を使った環境別反映運用を 1 ドメインとして扱う（領域ごとの詳細は [`references/`](skills/bm-code-management/references/) に分割。アクション実行は扱わない） |
 
 ## インストール
 
