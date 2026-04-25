@@ -1,6 +1,6 @@
 ---
 name: bm-code-management
-description: "ユーザーが BaseMachina でアクション定義（`defineAction` / `defineConfig`）を TypeScript で編集し、`bm sync` で差分をプレビューするときに使う skill。アクション実行は扱わない。公式ドキュメント: https://docs.basemachina.com/preview/code_management/"
+description: "ユーザーが BaseMachina でアクション定義（`defineAction` / `defineConfig`）を TypeScript で編集し、`bm sync --dry` で差分をプレビューするときに使う skill。アクション実行は扱わない。JavaScript アクションの**コード本体**（`./js-action-codes/*.ts`）の作成は `bm-js-action` skill、GitHub Actions / OIDC / 環境別反映の運用は `bm-cicd-setup` skill に委譲する。公式ドキュメント: https://docs.basemachina.com/preview/code_management/"
 allowed-tools: "Bash(bm sync:*) Bash(bm --help:*) Bash(bm --version) Bash(npx tsc:*) Bash(npm outdated:*) Bash(npm i:*) Bash(yarn add:*) Bash(yarn outdated:*) Bash(yarn tsc:*) Bash(pnpm add:*) Bash(pnpm outdated:*) Bash(pnpm exec:*) Bash(bun add:*) Bash(bun outdated:*) Bash(bunx tsc:*) Read Grep Glob Edit Write"
 ---
 
@@ -11,8 +11,14 @@ allowed-tools: "Bash(bm sync:*) Bash(bm --help:*) Bash(bm --version) Bash(npx ts
 ## いつ使うか
 
 - `defineAction` / `defineConfig` を新規作成・編集する
-- `bm sync` で差分をプレビューしてユーザーに示す
+- `bm sync --dry` で差分をプレビューしてユーザーに示す
 - 認証切れや TypeScript 型エラーから復旧する
+
+## いつ使わないか（他 skill に委譲）
+
+- JavaScript アクションの**コード本体**（`defineAction({ class: "javascript", code: readFile("./js-action-codes/xxx.ts") })` から参照される `.ts` ファイル）を書く・直す → `bm-js-action`
+- GitHub Actions のワークフロー作成、OIDC 設定、`prd` 等への環境別反映運用 → `bm-cicd-setup`
+- ローカルから `bm sync`（`--dry` なし）で実環境へ反映する → 本 skill では扱わない（破壊的反映は CI または明示的なユーザー操作に委ねる）
 
 ## ワークフロー
 
@@ -67,7 +73,12 @@ allowed-tools: "Bash(bm sync:*) Bash(bm --help:*) Bash(bm --version) Bash(npx ts
 
 ## 参照先
 
-- 公式ドキュメント: <https://docs.basemachina.com/preview/code_management/>
+- 公式ドキュメント（コード管理トップ）: <https://docs.basemachina.com/preview/code_management/>
+- 設定ファイル: <https://docs.basemachina.com/preview/code_management/configuration/>
+- `defineConfig`: <https://docs.basemachina.com/preview/code_management/sdk/define_config/>
+- `defineAction`: <https://docs.basemachina.com/preview/code_management/sdk/define_action/>
+- `readFile`: <https://docs.basemachina.com/preview/code_management/sdk/read_file/>
+- `bm sync` CLI: <https://docs.basemachina.com/preview/code_management/cli/sync/>
 - SDK の型定義: `node_modules/@basemachina/sdk/dist/oac/index.d.ts`
-- JavaScript アクション runtime 型: `node_modules/@basemachina/action/dist/*.d.ts`
 - CLI のフラグ一覧: `bm sync --help`
+- 関連 skill: `bm-js-action`（JS アクションのコード本体） / `bm-cicd-setup`（CI/CD と環境別反映）

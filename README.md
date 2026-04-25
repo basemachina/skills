@@ -9,11 +9,13 @@ BaseMachina 用の [Agent Skill](https://agentskills.io/specification) を配布
 
 | skill | 概要 |
 | --- | --- |
-| [`bm-code-management`](skills/bm-code-management/) | `defineAction` / `defineConfig` を TypeScript で編集し、`bm sync` で差分をプレビューする skill（アクション実行は扱わない） |
+| [`bm-code-management`](skills/bm-code-management/) | `defineAction` / `defineConfig` を TypeScript で編集し、`bm sync --dry` で差分をプレビューする skill（アクション実行は扱わない） |
+| [`bm-js-action`](skills/bm-js-action/) | JavaScript アクションの**コード本体**（`./js-action-codes/*.ts`）を作成・編集する skill。`executeAction` / `createActionJob` / `wait` / `ResultError` の取り扱いを含む |
+| [`bm-cicd-setup`](skills/bm-cicd-setup/) | GitHub Actions による BaseMachina コード管理の運用（OIDC 認証、`bm sync` の環境別反映、2 / 3 ブランチパターン）を構築・改修する skill |
 
 ## インストール
 
-用途に応じて以下から選択してください。
+用途に応じて以下から選択してください。以下の例ではコマンド引数に `bm-code-management` を指定していますが、他の skill（`bm-js-action`, `bm-cicd-setup`）も同様に skill 名を差し替えれば install できます。引数を省略する形式（`npx skills add basemachina/skills` など）であれば対話的にすべての skill を選択できます。
 
 ### 1. `npx skills`（Node.js さえあれば install 可 / 推奨）
 
