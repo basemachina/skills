@@ -1,7 +1,7 @@
 ---
 name: bm-code-management
 description: "BaseMachina のコード管理を扱うときの skill。`defineAction` / `defineConfig` の TypeScript 設定編集、JavaScript アクションのコード本体（`readFile(...)` 参照先）の作成・編集、コードエディターのビューコードをコード取得設定と同じ repo で扱う作業、`bm sync --dry` での差分プレビューを 1 つのドメインとして扱う。アクション実行や本番反映は扱わない。詳細は領域ごとに `references/` に分割。公式ドキュメント: https://docs.basemachina.com/preview/code_management/"
-license: Apache-2.0
+license: MIT
 allowed-tools: "Bash(bm sync --dry:*) Bash(bm --help:*) Bash(bm --version) Bash(npx tsc:*) Bash(yarn tsc:*) Bash(pnpm exec tsc:*) Bash(bunx tsc:*) Bash(npm i:*) Bash(yarn add:*) Bash(pnpm add:*) Bash(bun add:*) Bash(npm outdated:*) Bash(yarn outdated:*) Bash(pnpm outdated:*) Bash(bun outdated:*) Read Grep Glob Edit Write"
 ---
 

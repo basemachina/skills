@@ -2,7 +2,7 @@
 
 BaseMachina 用の [Agent Skill](https://agentskills.io/specification) を配布するパブリックリポジトリ。
 
-- ライセンス: Apache-2.0
+- ライセンス: MIT
 - 対象エージェント: Claude Code / Codex CLI / Cursor / GitHub Copilot CLI / Gemini CLI など、Agent Skill 仕様をサポートする各種エージェント（エージェントごとの install 先は下記の「インストール」セクションおよび[`gh skill` manual](https://cli.github.com/manual/gh_skill) を参照）
 
 ## 収録 skill
