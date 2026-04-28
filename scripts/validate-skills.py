@@ -67,7 +67,7 @@ def validate_skill(skill_dir: Path) -> list[str]:
     except ValueError as exc:
         return [f"{skill_path.relative_to(ROOT)}: {exc}"]
 
-    for required in ("name", "description"):
+    for required in ("name", "description", "license"):
         if required not in fields:
             problems.append(f"{skill_path.relative_to(ROOT)}: missing required '{required}' frontmatter")
         elif not clean_yaml_scalar(fields[required]):
