@@ -1,35 +1,35 @@
-# Answer Policy
+# 回答ポリシー
 
-Use this policy after opening the relevant official pages.
+関連する公式ページを開いて確認した後、このポリシーに従う。
 
-## Required Behavior
+## 必須ルール
 
-- Answer from official pages that were actually opened and read in the current turn.
-- Include the official URL or URLs used as sources.
-- Keep quotations short. Prefer paraphrase plus a link.
-- Separate confirmed facts from inference when the docs do not state something directly.
-- If no official source confirms the answer, say so clearly instead of guessing.
+- そのターンで実際に開いて読んだ公式ページを根拠に回答する。
+- 根拠にした公式 URL を含める。
+- 引用は短くし、原則として要約とリンクで示す。
+- ドキュメントが直接述べていない内容は、確認済みの事実と推測を分けて書く。
+- 公式ソースで確認できない場合は、推測せずその旨を明示する。
 
-## Handling Missing or Conflicting Docs
+## 見つからない / 矛盾する場合
 
-- If official docs are silent, answer: "公式 docs では確認できませんでした" and explain what was checked.
-- If official pages conflict, prefer in this order:
-  1. Current API reference or CLI reference
-  2. Current product guide
-  3. Release notes / migration guide for the relevant version
-  4. Official GitHub repository docs
-  5. Help center article
-- Mention the conflict briefly and identify the source being treated as authoritative.
+- 公式ドキュメントに記載がなければ、「公式ドキュメントでは確認できませんでした」と書き、何を確認したかを説明する。
+- 公式ページ同士が矛盾する場合は、次の順に優先する:
+  1. 現行の API リファレンス / CLI リファレンス
+  2. 現行のプロダクトガイド
+  3. 該当バージョンのリリースノート / 移行ガイド
+  4. 公式 GitHub リポジトリのドキュメント
+  5. ヘルプセンター記事
+- 矛盾を短く説明し、どのソースを優先根拠と見なしたかを示す。
 
-## Freshness
+## 最新性
 
-- For "latest", "current", "today", pricing, model lists, limits, compatibility, deprecations, and release status, always perform a fresh official lookup.
-- Include exact dates when the user uses relative dates or when the docs provide release dates.
-- If the official page has no visible update date, avoid claiming when it changed.
+- 「latest」「current」「today」、価格、モデル一覧、制限、互換性、廃止予定、リリース状況は、必ず最新の公式ページを確認する。
+- ユーザーが相対日付を使った場合やドキュメントにリリース日がある場合は、具体的な日付を含める。
+- 公式ページに更新日が見当たらない場合は、いつ変更されたかを断定しない。
 
-## Response Shape
+## 回答の形
 
-- Start with the direct answer.
-- Add only the details needed for the user's decision or next action.
-- End with a short "Sources" list when multiple official pages were used.
-- Do not cite non-official pages as evidence.
+- 直接の答えから始める。
+- ユーザーの判断や次の行動に必要な詳細だけを加える。
+- 複数の公式ページを使った場合は、最後に短い「参照元」リストを付ける。
+- 非公式ページを根拠として引用しない。

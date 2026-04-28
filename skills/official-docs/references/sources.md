@@ -1,20 +1,20 @@
-# Official Sources
+# 公式参照元
 
 公式 URL を確認するときの優先ソース一覧。ここに無いサービスでも、回答前に運営元の公式ドメインを特定してから検索する。
 
-## Priority
+## 優先順位
 
-1. 公式 API reference / developer documentation
-2. 公式 guide / tutorial / concepts
-3. 公式 release notes / changelog / migration guide
-4. 公式 GitHub repository の docs / README / examples
-5. 公式 help center / support article
+1. 公式 API リファレンス / 開発者ドキュメント
+2. 公式ガイド / チュートリアル / 概念説明
+3. 公式リリースノート / 変更履歴 / 移行ガイド
+4. 公式 GitHub リポジトリのドキュメント / README / examples
+5. 公式ヘルプセンター / サポート記事
 
 非公式記事、個人ブログ、Q&A サイト、SNS、検索結果スニペットは根拠にしない。
 
-## Common Domains
+## よく使う公式ドメイン
 
-| Product / org | Official docs / source |
+| 製品 / 組織 | 公式ドキュメント / 参照元 |
 | --- | --- |
 | BaseMachina | `https://docs.basemachina.com/` |
 | OpenAI API | `https://platform.openai.com/docs/` |
@@ -34,10 +34,10 @@
 | React | `https://react.dev/` |
 | Next.js | `https://nextjs.org/docs/` |
 
-## Search Patterns
+## 検索パターン
 
-- Use domain-restricted queries such as `site:platform.openai.com/docs file search vector stores`.
-- For version-sensitive questions, include the version or release family in the query.
-- For CLI behavior, prefer official command reference pages over examples embedded in blog posts.
-- For SDK behavior, check both docs and generated API reference when available.
-- For deprecations or breaking changes, search official release notes and migration guides in addition to the main guide.
+- `site:platform.openai.com/docs file search vector stores` のように、公式ドメインに限定して検索する。
+- バージョン依存の質問では、バージョン番号やリリース系列を検索語に含める。
+- CLI の挙動は、ブログ内の例より公式コマンドリファレンスを優先する。
+- SDK の挙動は、可能ならドキュメントと生成された API リファレンスの両方を確認する。
+- 廃止予定や破壊的変更は、メインのガイドに加えて公式リリースノートと移行ガイドを検索する。

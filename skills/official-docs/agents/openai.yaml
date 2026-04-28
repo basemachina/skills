@@ -1,7 +1,7 @@
 interface:
-  display_name: "Official Docs"
+  display_name: "公式ドキュメント"
   short_description: "公式ドキュメントURL確認に基づく根拠付き回答支援"
-  default_prompt: "Use $official-docs to answer from official documentation URLs with sources."
+  default_prompt: "$official-docs を使って公式ドキュメントURLに基づき根拠付きで回答してください。"
 
 policy:
   allow_implicit_invocation: true
