@@ -1,6 +1,6 @@
 ---
 name: bm-code-management
-description: "BaseMachina のコード管理を扱うときの skill。`defineAction` / `defineConfig` の TypeScript 設定編集、JavaScript アクションのコード本体（`readFile(...)` 参照先）の作成・編集、コードエディターのビューコードをコード取得設定と同じ repo で扱う作業、`bm sync --dry` での差分プレビューを 1 つのドメインとして扱う。アクション実行や本番反映は扱わない。詳細は領域ごとに `references/` に分割。公式ドキュメント: https://docs.basemachina.com/preview/code_management/"
+description: "BaseMachina のコード管理を扱うときの skill。`defineAction` / `defineConfig` の TypeScript 設定編集、JavaScript アクションのコード本体（`readFile(...)` 参照先）の作成・編集、コードエディターのビューコードをコード取得設定と同じ repo で扱う作業、`bm pull` による Web UI 作成アクションの取り込み判断、`bm sync --dry` での差分プレビューを 1 つのドメインとして扱う。アクション実行や本番反映は扱わない。詳細は領域ごとに `references/` に分割。公式ドキュメント: https://docs.basemachina.com/preview/code_management/"
 license: MIT
 allowed-tools: "Bash(bm sync --dry:*) Bash(bm --help:*) Bash(bm --version) Bash(npx tsc:*) Bash(yarn tsc:*) Bash(pnpm exec tsc:*) Bash(bunx tsc:*) Bash(npm i:*) Bash(yarn add:*) Bash(pnpm add:*) Bash(bun add:*) Bash(npm outdated:*) Bash(yarn outdated:*) Bash(pnpm outdated:*) Bash(bun outdated:*) Read Grep Glob Edit Write"
 ---
@@ -14,6 +14,7 @@ allowed-tools: "Bash(bm sync --dry:*) Bash(bm --help:*) Bash(bm --version) Bash(
 - `defineAction` / `defineConfig` を新規作成・編集する
 - JavaScript アクションのコード本体を新規作成・編集する
 - コードエディターのビューコードを同じ repo に置き、コード取得設定と組み合わせる
+- Web UI で作成した未取り込みアクションを `bm pull` でコード管理へ取り込む相談を受ける
 - `bm sync --dry` で差分をプレビューしてユーザーに示す
 - 認証切れや TypeScript 型エラーから復旧する
 
@@ -72,6 +73,14 @@ allowed-tools: "Bash(bm sync --dry:*) Bash(bm --help:*) Bash(bm --version) Bash(
 - フラグ詳細は `bm sync --help` または <https://docs.basemachina.com/preview/code_management/cli/sync/> を参照する
 - CI/CD の運用詳細は <https://docs.basemachina.com/preview/code_management/ci_cd/> を参照する。PR では `bm sync --dry`、マージ後や環境デプロイでは CI が `bm sync` / `bm sync <環境ID>` を担う前提で説明する
 
+## 共通: `bm pull` の扱い
+
+- `bm pull` は、設定ファイルにまだ含まれていない Web UI 作成アクションを repo に取り込むためのコマンド
+- 主な更新対象は `src/actions/`、`src/bm-refs.ts`、`type.d.ts`、設定ファイルへの import / `actions` 追記
+- 既に設定ファイルに含まれているアクションの Web UI 変更は `bm pull` 対象外。Web UI 側の変更を取り込みたい場合は、設定ファイルを手動更新するか、設定を再ダウンロードして該当ファイルだけ差し替える
+- `bm pull` は対話確認後にファイルを書き込むため、エージェントが実行する場合は事前にユーザーへ確認する
+- 詳細は <https://docs.basemachina.com/preview/code_management/cli/pull/> を参照する
+
 ## 共通: 認証
 
 `bm sync --dry` がローカルで `authentication required` 等で失敗したら、ユーザーに `bm login` の実行を依頼する。`bm login` はブラウザを開く interactive フローで、エージェントから実行すると state トークンの受け渡しで破綻する。
@@ -80,6 +89,7 @@ allowed-tools: "Bash(bm sync --dry:*) Bash(bm --help:*) Bash(bm --version) Bash(
 
 - 公式ドキュメント（コード管理トップ）: <https://docs.basemachina.com/preview/code_management/>
 - 設定ファイル: <https://docs.basemachina.com/preview/code_management/configuration/>
+- `bm pull` CLI: <https://docs.basemachina.com/preview/code_management/cli/pull/>
 - `bm sync` CLI: <https://docs.basemachina.com/preview/code_management/cli/sync/>
 - CI/CD: <https://docs.basemachina.com/preview/code_management/ci_cd/>
 - JS アクション: <https://docs.basemachina.com/action/datasources/javascript_action/>
