@@ -11,7 +11,7 @@
       "name": "bm-skills",
       "source": "./",
       "description": "BaseMachina のコード管理ワークフローを自動化する skill 群",
-      "version": "1.0.0",
+      "version": "0.1.0",
       "license": "Apache-2.0",
       "homepage": "https://github.com/basemachina/skills",
       "repository": "https://github.com/basemachina/skills",

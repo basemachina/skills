@@ -177,8 +177,8 @@ scripts/validate-skills.py
 # GitHub CLI 公式の publish 検証（release は作らない）
 gh skill publish --dry-run
 
-# v1.0.0 として公開 release を作る
-gh skill publish --tag v1.0.0
+# v0.1.0 として公開 release を作る
+gh skill publish --tag v0.1.0
 ```
 
 `gh skill publish` は `skills/*/SKILL.md` を検出し、skill 名・必須 frontmatter・`allowed-tools` 型・install 由来の `metadata.github-*` 混入などを検証します。
