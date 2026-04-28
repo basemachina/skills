@@ -65,15 +65,15 @@ plugin を削除する場合:
 
 version を指定しない場合、`gh skill install` は latest tagged release を使います。release がない場合は default branch の HEAD を使います。
 
-特定 version に固定したい場合は、release tag または commit SHA を指定します。`v0.1.0` release 後に固定する例:
+特定 version に固定したい場合は、release tag または commit SHA を指定します。`v1.0.0` release 後に固定する例:
 
 ```bash
-gh skill install basemachina/skills bm-code-management@v0.1.0 --agent codex --scope user
-gh skill install basemachina/skills basemachina-docs@v0.1.0 --agent codex --scope user
+gh skill install basemachina/skills bm-code-management@v1.0.0 --agent codex --scope user
+gh skill install basemachina/skills basemachina-docs@v1.0.0 --agent codex --scope user
 
 # または
-gh skill install basemachina/skills bm-code-management --pin v0.1.0 --agent codex --scope user
-gh skill install basemachina/skills basemachina-docs --pin v0.1.0 --agent codex --scope user
+gh skill install basemachina/skills bm-code-management --pin v1.0.0 --agent codex --scope user
+gh skill install basemachina/skills basemachina-docs --pin v1.0.0 --agent codex --scope user
 ```
 
 release 前の状態を固定したい場合は、tag の代わりに commit SHA を指定してください。
