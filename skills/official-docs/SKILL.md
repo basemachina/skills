@@ -1,0 +1,45 @@
+---
+name: official-docs
+description: "公式ドキュメントURLを確認して、仕様・使い方・制約・最新情報に根拠付きで回答する skill。回答前に公式ページを検索・閲覧し、非公式記事や記憶だけで確定しない。"
+license: MIT
+allowed-tools: "WebSearch WebFetch Read Grep Glob"
+---
+
+# Official Docs
+
+公式ドキュメントを根拠に、仕様・使い方・制約・最新情報へ回答する。回答前に必ず公式 URL を検索・閲覧し、非公式記事や記憶だけで確定しない。
+
+## いつ使うか
+
+- ユーザーがプロダクト、API、SDK、CLI、設定、制約、エラー、移行、最新仕様について質問している
+- 「公式 docs ではどうなっているか」「最新の仕様を確認して」など、根拠付き回答が必要
+- 対象サービスが明示されていなくても、質問文から公式ドキュメントを特定できる
+
+## いつ使わないか
+
+- ユーザーが明示的に「検索しないで」「手元の知識だけで」と依頼している
+- 公式ドキュメントではなく、実装コード・ローカル repo・社内資料だけを根拠にすべき調査
+- 一般的な相談で、公式仕様の確認が回答品質に影響しない
+
+## Workflow
+
+1. 質問から対象プロダクト、機能、バージョン、環境を特定する
+2. [`references/sources.md`](references/sources.md) を見て、公式ドメインと優先ソースを確認する
+3. 公式ドメインに限定して検索し、関連する公式ページを開いて読む
+4. 仕様が分かれる場合は、API reference、guide、release notes、migration guide など複数の公式ページを確認する
+5. [`references/answer-policy.md`](references/answer-policy.md) に従って、公式 URL 付きで回答する
+
+検索・閲覧できない場合は、その制約を明示し、公式確認なしに断定しない。
+
+## Source Selection
+
+- 既知の公式サイトは [`references/sources.md`](references/sources.md) を優先する
+- 未登録プロダクトは、運営元の公式ドメイン、開発者 docs、API reference、GitHub organization などから公式性を確認する
+- 非公式記事、個人ブログ、Q&A サイト、検索結果スニペットは、公式ページへの導線としてだけ使う
+
+## Answer Requirements
+
+- 回答には確認した公式 URL を含める
+- 公式 docs に見つからない内容は「公式 docs では確認できない」と書く
+- 最新性が重要な場合は、確認したページ、日付、バージョン、release notes の有無を具体的に示す
+- 複数ソースが矛盾する場合は、どの公式ページを優先したかを短く説明する
