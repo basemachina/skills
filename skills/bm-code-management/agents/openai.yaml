@@ -1,0 +1,7 @@
+interface:
+  display_name: "BaseMachina Code Management"
+  short_description: "BaseMachina のコード管理作業を支援"
+  default_prompt: "Use $bm-code-management to edit BaseMachina code-management configuration and preview bm sync changes."
+
+policy:
+  allow_implicit_invocation: true
