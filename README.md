@@ -1,213 +1,114 @@
 # basemachina/skills
 
-BaseMachina 用の [Agent Skill](https://agentskills.io/specification) を配布するパブリックリポジトリ。
-
-- ライセンス: MIT
-- 対象エージェント: Claude Code / Codex CLI / Cursor / GitHub Copilot CLI / Gemini CLI など、Agent Skill 仕様をサポートする各種エージェント（エージェントごとの install 先は下記の「インストール」セクションおよび[`gh skill` manual](https://cli.github.com/manual/gh_skill) を参照）
+BaseMachina のコード管理作業で使う Agent Skill コレクションです。
 
 ## 収録 skill
 
-| skill | 概要 |
+| skill | 使う場面 |
 | --- | --- |
-| [`bm-code-management`](skills/bm-code-management/) | BaseMachina のコード管理を扱う skill。`defineAction` / `defineConfig` の TS 設定編集、JavaScript アクションのコード本体（`readFile(...)` 参照先）作成、コードエディターのビューコードとコード取得設定の連携、`bm sync --dry` での差分プレビュー、GitHub Actions / OIDC を使った環境別反映運用を 1 ドメインとして扱う（領域ごとの詳細は [`references/`](skills/bm-code-management/references/) に分割。アクション実行は扱わない） |
+| [`bm-code-management`](skills/bm-code-management/) | `defineAction` / `defineConfig` の編集、JavaScript アクションのコード本体作成、ビューコードとコード取得設定の連携、`bm sync --dry` による差分確認 |
+
+この skill は、BaseMachina のコード管理 repo を編集するときのガードレールです。アクションの実行、本番反映、ビュー設定そのものの変更は扱いません。
 
 ## インストール
 
-用途に応じて以下から選択してください。
+推奨は GitHub CLI の `gh skill` です。GitHub CLI v2.90.0 以降で利用できます。`gh skill` は preview 機能なので、細かい挙動は今後変わる可能性があります。
 
-### 1. `npx skills`（Node.js さえあれば install 可 / 推奨）
-
-Vercel Labs の [`skills`](https://github.com/vercel-labs/skills) CLI 経由。Node.js 18+ があれば追加ツール不要で、対話的に skill を選択して install できます。
+まず内容を確認します。
 
 ```bash
-# 対話形式で skill を選択して install（プロジェクトスコープ）
-npx skills add basemachina/skills
-
-# ユーザー（グローバル）スコープに install
-npx skills add basemachina/skills --global
-
-# 特定の skill だけを確認なしで install
-npx skills add basemachina/skills --skill bm-code-management --yes
-
-# 特定のエージェント向けに install
-npx skills add basemachina/skills --agent claude-code
-```
-
-対応エージェント一覧は [vercel-labs/skills](https://github.com/vercel-labs/skills) を参照（Claude Code / Codex / Cursor / GitHub Copilot / Gemini CLI / Warp / Windsurf などを含む）。
-
-### 2. `gh skill install`（cross-agent）
-
-GitHub CLI v2.90.0 以降に同梱される公式 Agent Skills インストーラ。`--agent` と `--scope` で指定したエージェントごとに install 先ディレクトリを自動解決します（対応エージェントは [`gh skill install` manual](https://cli.github.com/manual/gh_skill_install) 参照）。非対話実行では repo と skill 名を明示してください。
-
-```bash
-# install 前に中身を確認
 gh skill preview basemachina/skills bm-code-management
-
-# Claude Code にユーザースコープで install
-gh skill install basemachina/skills bm-code-management --agent claude-code --scope user
-
-# Codex にプロジェクトスコープで install（repo 直下の .agents/skills/ に配置）
-gh skill install basemachina/skills bm-code-management --agent codex --scope project
-
-# 特定の git tag または commit SHA に pin
-gh skill install basemachina/skills bm-code-management --pin <tag-or-sha>
-
-# 対話モードで選択
-gh skill install
 ```
 
-対応エージェント: `github-copilot` / `claude-code` / `cursor` / `codex` / `gemini` / `antigravity`。
-プロジェクトスコープでは GitHub Copilot / Cursor / Codex / Gemini CLI / Antigravity が共通の `.agents/skills/` を使い、Claude Code は `.claude/skills/` を使います。
+使うエージェントと scope を明示して install します。
 
-### 3. Claude Code plugin marketplace（Claude Code 特化 / auto-update 対応）
+```bash
+# Codex で、ユーザー全体に install
+gh skill install basemachina/skills bm-code-management --agent codex --scope user
 
-Claude Code ネイティブのマーケットプレイス経由。auto-update や `/plugin` 管理 UI と連携します。
+# Codex で、現在の repo だけに install
+gh skill install basemachina/skills bm-code-management --agent codex --scope project
+```
 
-**対話（Claude Code 内）**:
+`--agent` には `github-copilot` / `claude-code` / `cursor` / `codex` / `gemini` / `antigravity` を指定できます。非対話実行では `--agent` と `--scope` を明示すると、意図しない場所への install を避けられます。
+
+## バージョン固定
+
+version を指定しない場合、`gh skill install` は latest tagged release を使います。release がない場合は default branch の HEAD を使います。
+
+特定 version に固定したい場合は、release tag または commit SHA を指定します。`v0.1.0` release 後に固定する例:
+
+```bash
+gh skill install basemachina/skills bm-code-management@v0.1.0 --agent codex --scope user
+
+# または
+gh skill install basemachina/skills bm-code-management --pin v0.1.0 --agent codex --scope user
+```
+
+release 前の状態を固定したい場合は、tag の代わりに commit SHA を指定してください。
+
+## 更新
+
+install 済みの skill は `gh skill update` で更新できます。
+
+```bash
+# 更新があるか確認
+gh skill update --dry-run
+
+# 全 skill を確認なしで更新
+gh skill update --all
+```
+
+pin された skill は通常の update 対象から外れます。pin を外して更新する場合は `--unpin` を使います。
+
+```bash
+gh skill update --unpin
+```
+
+## 削除
+
+GitHub CLI v2.90.0 の `gh skill` には uninstall / remove コマンドがありません。削除したい場合は、install 先の `bm-code-management` ディレクトリを削除してください。
+
+主な install 先は以下です。
+
+| agent | user scope | project scope |
+| --- | --- | --- |
+| GitHub Copilot | `~/.copilot/skills` | `.agents/skills` |
+| Claude Code | `~/.claude/skills` | `.claude/skills` |
+| Cursor | `~/.cursor/skills` | `.agents/skills` |
+| Codex | `~/.codex/skills` | `.agents/skills` |
+| Gemini CLI | `~/.gemini/skills` | `.agents/skills` |
+| Antigravity | `~/.gemini/antigravity/skills` | `.agents/skills` |
+
+## Claude Code plugin として使う
+
+Claude Code では plugin marketplace としても利用できます。
 
 ```shell
 /plugin marketplace add basemachina/skills
 /plugin install bm-skills@basemachina
 ```
 
-**非対話 CLI**:
+marketplace を更新する場合:
 
-```bash
-claude plugin marketplace add basemachina/skills
-claude plugin install bm-skills@basemachina
+```shell
+/plugin marketplace update basemachina
 ```
 
-install 後は `/reload-plugins` で読み込み直すと skill が有効になります。
+plugin を削除する場合:
 
-### 4. チーム自動配布（`.claude/settings.json`）
-
-プロジェクトルートの `.claude/settings.json` にマーケットプレイスを登録しておくと、チームメンバーがプロジェクトを trust した時点で marketplace が自動で追加されます。
-
-```json
-{
-  "extraKnownMarketplaces": {
-    "basemachina": {
-      "source": {
-        "source": "github",
-        "repo": "basemachina/skills"
-      }
-    }
-  },
-  "enabledPlugins": {
-    "bm-skills@basemachina": true
-  }
-}
+```shell
+/plugin uninstall bm-skills@basemachina
 ```
 
-### 5. Gemini CLI（`gemini skills install`）
+## ライセンス
 
-Gemini CLI の Agent Skills サブコマンド経由で install します。`gemini extensions install` は `gemini-extension.json` を持つ repo 向けで、本 repo は skill コレクションなので使えません。
-
-```bash
-# 全 skill を install（デフォルトは user スコープ）
-gemini skills install https://github.com/basemachina/skills.git
-
-# workspace スコープ（このリポジトリのみで有効）
-gemini skills install https://github.com/basemachina/skills.git --scope workspace
-```
-
-`gemini skills list` で認識されていることを確認してください。更新は再度 `gemini skills install` を実行します。
-
-### 6. Codex CLI
-
-Codex CLI はスキャン対象ディレクトリが決まっているため、該当箇所に SKILL.md を配置します。
-
-```bash
-# ユーザースコープ
-mkdir -p ~/.codex/skills
-tmp=$(mktemp -d) && git clone --depth 1 https://github.com/basemachina/skills.git "$tmp"
-cp -R "$tmp/skills/bm-code-management" ~/.codex/skills/
-rm -rf "$tmp"
-
-# または repo 直下の .agents/skills/ に置けば、そのリポジトリ内でのみ有効
-```
-
-セッション内で `$skill-installer` が利用可能な場合はそちらからも install できます。配置後に `/skills` で認識を確認してください。
-
-### 7. Cursor（rules として手動配置）
-
-`gh skill install --agent cursor` を使える場合は `.agents/skills/`（project）または `~/.cursor/skills/`（user）に配置されます。Cursor rules として読みたい場合は、プロジェクトの `.cursor/rules/` に `.mdc` として手動配置してください。
-
-```bash
-tmp=$(mktemp -d) && git clone --depth 1 https://github.com/basemachina/skills.git "$tmp"
-mkdir -p .cursor/rules
-cp "$tmp/skills/bm-code-management/SKILL.md" .cursor/rules/bm-code-management.mdc
-rm -rf "$tmp"
-```
-
-Cursor Settings の Rules 画面で読み込まれていることを確認してください。全プロジェクトで共通利用したい場合は、Cursor Settings の User Rules に内容を貼り付ける運用が公式サポートされています。
-
-### 8. 直接 git clone（fallback）
-
-`gh` が使えない環境向けの最終手段。
-
-```bash
-tmp=$(mktemp -d) && git clone --depth 1 https://github.com/basemachina/skills.git "$tmp"
-mkdir -p ~/.claude/skills
-cp -R "$tmp/skills/bm-code-management" ~/.claude/skills/
-rm -rf "$tmp"
-```
-
-install 先は各エージェントの skills ディレクトリに読み替えてください。
-
-- Claude Code（user）: `~/.claude/skills/`
-- Claude Code（project）: `.claude/skills/`
-- Codex CLI（user）: `~/.codex/skills/`
-- Codex CLI（project）: `.agents/skills/`
-- GitHub Copilot CLI（user）: `~/.copilot/skills/`
-- GitHub Copilot CLI（project）: `.agents/skills/`
-- Gemini CLI（user）: `~/.gemini/skills/`
-- Gemini CLI（project）: `.agents/skills/`
-- Cursor（user）: `~/.cursor/skills/`
-- Cursor（project）: `.agents/skills/`
-
-## 公開・検証
-
-公開前の skill 検証は GitHub CLI v2.90.0 以降で行います。
-
-```bash
-# ローカルの構造チェック
-scripts/validate-skills.py
-
-# GitHub CLI 公式の publish 検証（release は作らない）
-gh skill publish --dry-run
-
-# v0.1.0 として公開 release を作る
-gh skill publish --tag v0.1.0
-```
-
-`gh skill publish` は `skills/*/SKILL.md` を検出し、skill 名・必須 frontmatter・`allowed-tools` 型・install 由来の `metadata.github-*` 混入などを検証します。
-
-## アップデート
-
-| インストール方法 | 更新コマンド |
-| --- | --- |
-| `npx skills` | `npx skills update` または `npx skills update bm-code-management` |
-| `gh skill install` | `gh skill update bm-code-management` または `gh skill update --all` |
-| Claude Code plugin | `/plugin marketplace update basemachina` |
-| Gemini CLI | 再度 `gemini skills install` を実行（`uninstall` → `install` でも可） |
-| 手動 `git clone` | 再度 install を実行（既存ディレクトリを削除してから） |
-
-## アンインストール
-
-| インストール方法 | コマンド |
-| --- | --- |
-| `npx skills` | `npx skills remove bm-code-management` |
-| `gh skill install` | `gh skill` には `uninstall` サブコマンドが無い。install 先ディレクトリ（`~/.claude/skills/bm-code-management` 等）を `rm -rf` で削除する |
-| Claude Code plugin | `/plugin uninstall bm-skills@basemachina` |
-| Gemini CLI | `gemini skills uninstall bm-code-management --scope workspace`（user スコープなら `--scope user`） |
-| 手動 | install 先ディレクトリを `rm -rf` |
+MIT
 
 ## 関連リンク
 
-- BaseMachina 公式ドキュメント: <https://docs.basemachina.com/preview/code_management/>
+- BaseMachina コード管理: <https://docs.basemachina.com/preview/code_management/>
 - BaseMachina ビューコードの Git 管理: <https://docs.basemachina.com/view/code_editor/git_management/>
 - Agent Skills Specification: <https://agentskills.io/specification>
-- Claude Code plugins: <https://code.claude.com/docs/en/plugins>
-- `gh skill` マニュアル: <https://cli.github.com/manual/gh_skill>
-- `skills` CLI（Vercel Labs）: <https://github.com/vercel-labs/skills> / skill ディレクトリ: <https://skills.sh/>
+- GitHub CLI `gh skill`: <https://cli.github.com/manual/gh_skill>
+- Claude Code plugins: <https://code.claude.com/docs/en/discover-plugins>
