@@ -67,6 +67,7 @@ allowed-tools: "Bash(bm sync --dry:*) Bash(bm --help:*) Bash(bm --version) Bash(
 
 - **エージェントから実行できるのは `bm sync --dry` のみ**（`allowed-tools` で制限）
 - 差分の意図が編集と一致するかを必ずユーザーに引き渡し、実反映は CI またはユーザー手動操作に委ねる
+- JavaScript アクションの `code` 本文は dry-run 出力では省略されるため、本文差分の確認には `git diff` を使う
 - フラグ詳細は `bm sync --help` または <https://docs.basemachina.com/preview/code_management/cli/sync/> を参照する
 - CI/CD の運用詳細は <https://docs.basemachina.com/preview/code_management/ci_cd/> を参照する。PR では `bm sync --dry`、マージ後や環境デプロイでは CI が `bm sync` / `bm sync <環境ID>` を担う前提で説明する
 
