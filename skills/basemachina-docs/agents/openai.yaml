@@ -1,0 +1,7 @@
+interface:
+  display_name: "BaseMachina Docs"
+  short_description: "BaseMachina 公式ドキュメント検索に基づく根拠付き回答"
+  default_prompt: "$basemachina-docs を使って BaseMachina 公式ドキュメントを確認し、根拠URL付きで回答してください。"
+
+policy:
+  allow_implicit_invocation: true
