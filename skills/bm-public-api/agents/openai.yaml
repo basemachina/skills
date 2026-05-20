@@ -1,0 +1,7 @@
+interface:
+  display_name: "BaseMachina Public API"
+  short_description: "BaseMachina 公開API を呼び出すコードの作成と認証セットアップを支援"
+  default_prompt: "Use $bm-public-api to write code that calls the BaseMachina public API, set up bm login / OIDC authentication, and handle responses."
+
+policy:
+  allow_implicit_invocation: true
