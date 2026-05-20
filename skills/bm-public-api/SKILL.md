@@ -55,5 +55,5 @@ allowed-tools: "Read Grep Glob Edit Write WebSearch WebFetch"
 - 公開APIとは: <https://docs.basemachina.com/preview/public_api/>
 - 認証して呼び出す: <https://docs.basemachina.com/preview/public_api/authentication/>
 - API リファレンス（エンドポイント・パラメーター・レスポンス・エラーコード）: <https://docs.basemachina.com/preview/public_api/reference/>
-- OIDC 信頼ポリシーの設定: <https://docs.basemachina.com/preview/code_management/getting_started/>
+- サービスアカウントと OIDC 信頼ポリシーの設定: <https://docs.basemachina.com/preview/service_account/>
 - `bm login`: <https://docs.basemachina.com/preview/code_management/cli/login/>
