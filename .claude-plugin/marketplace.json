@@ -10,12 +10,12 @@
     {
       "name": "bm-skills",
       "source": "./",
-      "description": "BaseMachina の公式ドキュメント調査とコード管理ワークフローを支援する skill 群",
+      "description": "BaseMachina の公式ドキュメント調査・コード管理ワークフロー・公開API 呼び出しを支援する skill 群",
       "version": "1.0.0",
       "license": "MIT",
       "homepage": "https://github.com/basemachina/skills",
       "repository": "https://github.com/basemachina/skills",
-      "keywords": ["basemachina", "docs", "code-management"],
+      "keywords": ["basemachina", "docs", "code-management", "public-api"],
       "skills": "./skills/",
       "strict": false
     }

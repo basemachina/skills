@@ -1,6 +1,6 @@
 # basemachina/skills
 
-BaseMachina のコード管理作業で使う Agent Skill コレクションです。
+BaseMachina を使った開発で使う Agent Skill コレクションです。
 
 ## 収録 skill
 
@@ -8,8 +8,9 @@ BaseMachina のコード管理作業で使う Agent Skill コレクションで�
 | --- | --- |
 | [`basemachina-docs`](skills/basemachina-docs/) | BaseMachina 公式ドキュメントを検索し、仕様・使い方・制約・コード例を根拠 URL 付きで回答 |
 | [`bm-code-management`](skills/bm-code-management/) | `defineAction` / `defineConfig` の編集、JavaScript アクションのコード本体作成、ビューコードとコード取得設定の連携、`bm sync --dry` による差分確認 |
+| [`bm-public-api`](skills/bm-public-api/) | 公開API（REST API）を外部システム・CI/CD・自社スクリプトから呼び出すコードの作成、`bm login` / OIDC 認証のセットアップ、レスポンス・エラーハンドリング |
 
-`basemachina-docs` は BaseMachina の仕様確認、`bm-code-management` は BaseMachina のコード管理 repo を編集するときのガードレールです。`bm-code-management` はアクションの実行、本番反映、ビュー設定そのものの変更は扱いません。
+`basemachina-docs` は BaseMachina の仕様確認、`bm-code-management` は BaseMachina のコード管理 repo を編集するときのガードレール、`bm-public-api` は公開API を呼び出すコードを書くときの skill です。`bm-code-management` はアクションの実行、本番反映、ビュー設定そのものの変更は扱いません。`bm-public-api` はアクション定義の編集や `bm sync` は扱わず、副作用のあるアクション実行はユーザー / CI に委ねます。
 
 ## インストール方法
 
@@ -24,6 +25,7 @@ GitHub CLI v2.90.0 以降を使える場合は、`gh skill` で install でき�
 ```bash
 gh skill preview basemachina/skills bm-code-management
 gh skill preview basemachina/skills basemachina-docs
+gh skill preview basemachina/skills bm-public-api
 ```
 
 使うエージェントと scope を明示して install します。
@@ -32,10 +34,12 @@ gh skill preview basemachina/skills basemachina-docs
 # Codex で、ユーザー全体に install
 gh skill install basemachina/skills bm-code-management --agent codex --scope user
 gh skill install basemachina/skills basemachina-docs --agent codex --scope user
+gh skill install basemachina/skills bm-public-api --agent codex --scope user
 
 # Codex で、現在の repo だけに install
 gh skill install basemachina/skills bm-code-management --agent codex --scope project
 gh skill install basemachina/skills basemachina-docs --agent codex --scope project
+gh skill install basemachina/skills bm-public-api --agent codex --scope project
 ```
 
 `--agent` には `github-copilot` / `claude-code` / `cursor` / `codex` / `gemini` / `antigravity` を指定できます。非対話実行では `--agent` と `--scope` を明示すると、意図しない場所への install を避けられます。
@@ -70,10 +74,12 @@ version を指定しない場合、`gh skill install` は latest tagged release 
 ```bash
 gh skill install basemachina/skills bm-code-management@v1.0.0 --agent codex --scope user
 gh skill install basemachina/skills basemachina-docs@v1.0.0 --agent codex --scope user
+gh skill install basemachina/skills bm-public-api@v1.0.0 --agent codex --scope user
 
 # または
 gh skill install basemachina/skills bm-code-management --pin v1.0.0 --agent codex --scope user
 gh skill install basemachina/skills basemachina-docs --pin v1.0.0 --agent codex --scope user
+gh skill install basemachina/skills bm-public-api --pin v1.0.0 --agent codex --scope user
 ```
 
 release 前の状態を固定したい場合は、tag の代わりに commit SHA を指定してください。
@@ -98,7 +104,7 @@ gh skill update --unpin
 
 ## `gh skill` で install した skill の削除
 
-GitHub CLI v2.90.0 の `gh skill` には uninstall / remove コマンドがありません。削除したい場合は、install 先の `bm-code-management` ディレクトリを削除してください。
+GitHub CLI v2.90.0 の `gh skill` には uninstall / remove コマンドがありません。削除したい場合は、install 先の対象 skill ディレクトリ（`bm-code-management` / `basemachina-docs` / `bm-public-api`）を削除してください。
 
 主な install 先は以下です。
 
@@ -118,6 +124,7 @@ MIT
 ## 関連リンク
 
 - BaseMachina コード管理: <https://docs.basemachina.com/preview/code_management/>
+- BaseMachina 公開API: <https://docs.basemachina.com/preview/public_api/>
 - BaseMachina AI 向け全文 docs: <https://docs.basemachina.com/llms-full.txt>
 - BaseMachina ビューコードの Git 管理: <https://docs.basemachina.com/view/code_editor/git_management/>
 - Agent Skills Specification: <https://agentskills.io/specification>

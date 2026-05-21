@@ -38,6 +38,16 @@
 2. `node_modules/@basemachina/sdk/dist/oac/index.d.ts` を Read して正しい型を確認する
 3. 修正後に `bm sync --dry` を再実行する
 
+## 開発環境限定のアクション（`developmentActions`）
+
+`defineConfig` は `actions` と `developmentActions` の 2 つにアクションを振り分けられる。「開発環境では動かしたいが検証・本番には流したくない」アクションは `developmentActions` に置く。
+
+- `bm sync` での開発環境への反映では、`developmentActions` も `actions` と同じく扱われる（作成・更新・再有効化・無効化）
+- `bm sync <環境ID>` での他環境への同期では、`developmentActions` は**対象外**になり同期先に反映されない
+- 同じ識別子（`id`）を `actions` と `developmentActions` の両方に書くとバリデーションエラーになる
+
+「このアクションは本番に出したくない」と言われたら、`actions` からの削除ではなく `developmentActions` への移動を検討する。フィールドの正確な仕様は <https://docs.basemachina.com/preview/code_management/configuration/> と <https://docs.basemachina.com/preview/code_management/sdk/define_config/> を都度確認する。
+
 ## 削除の挙動（論理削除）
 
 公式ドキュメントには明記が無いがエージェントが取り違えやすい挙動:
