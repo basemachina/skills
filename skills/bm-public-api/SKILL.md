@@ -1,6 +1,6 @@
 ---
 name: bm-public-api
-description: "BaseMachina の公開API（REST API）を外部システム・CI/CD・自社スクリプトから呼び出すコードを書くときの skill。アクションの実行、アクション一覧・詳細取得、環境一覧取得を HTTP で行う。`bm login` の JWT や、GitHub Actions / Google Cloud / AWS / 自社 OIDC IdP の ID Token をトークン交換した認証セットアップ、レスポンスとエラーのハンドリングを扱う。「公開API」「public API」「アクションを API で実行」「外部システムや CI から BaseMachina のアクションを呼び出す」「BaseMachina を curl で叩く」といった相談で使う。アクション定義の編集や `bm sync`（設定のコード管理）は bm-code-management、docs の仕様検索は basemachina-docs を使う。公式ドキュメント: https://docs.basemachina.com/preview/public_api/"
+description: "BaseMachina の公開API（REST API）を外部システム・CI/CD・自社スクリプトから呼び出すコードを書くときの skill。アクションの実行、アクション一覧・詳細取得、環境一覧取得を HTTP で行う。`bm login` の JWT や、GitHub Actions / Google Cloud / AWS / 自社 OIDC IdP の ID Token をトークン交換した認証セットアップ、レスポンスとエラーのハンドリングを扱う。「公開API」「public API」「アクションを API で実行」「外部システムや CI から BaseMachina のアクションを呼び出す」「BaseMachina を curl で叩く」といった相談で使う。アクション定義の編集や `bm sync`（設定のコード管理）は bm-code-management、docs の仕様検索は basemachina-docs を使う。公式ドキュメント: https://docs.basemachina.com/public_api/"
 license: MIT
 allowed-tools: "Read Grep Glob Edit Write WebSearch WebFetch"
 ---
@@ -9,7 +9,7 @@ allowed-tools: "Read Grep Glob Edit Write WebSearch WebFetch"
 
 公開APIは、ベースマキナのリソースを外部システムから操作する REST API。環境の一覧取得、アクションの一覧・詳細取得・実行を HTTP で行える。
 
-エンドポイント・リクエスト/レスポンス形式・認証手順・エラーコードは記憶で書かず、公式ドキュメント（<https://docs.basemachina.com/preview/public_api/>）と API リファレンス（<https://docs.basemachina.com/preview/public_api/reference/>）を都度 Open して確認する。公開API は開発中の機能で、仕様が変わる可能性がある。
+エンドポイント・リクエスト/レスポンス形式・認証手順・エラーコードは記憶で書かず、公式ドキュメント（<https://docs.basemachina.com/public_api/>）と API リファレンス（<https://docs.basemachina.com/public_api/reference/>）を都度 Open して確認する。
 
 ## いつ使うか
 
@@ -52,8 +52,8 @@ allowed-tools: "Read Grep Glob Edit Write WebSearch WebFetch"
 
 ## 参照先
 
-- 公開APIとは: <https://docs.basemachina.com/preview/public_api/>
-- 認証して呼び出す: <https://docs.basemachina.com/preview/public_api/authentication/>
-- API リファレンス（エンドポイント・パラメーター・レスポンス・エラーコード）: <https://docs.basemachina.com/preview/public_api/reference/>
-- サービスアカウントと OIDC 信頼ポリシーの設定: <https://docs.basemachina.com/preview/service_account/>
-- `bm login`: <https://docs.basemachina.com/preview/code_management/cli/login/>
+- 公開APIとは: <https://docs.basemachina.com/public_api/>
+- 認証して呼び出す: <https://docs.basemachina.com/public_api/authentication/>
+- API リファレンス（エンドポイント・パラメーター・レスポンス・エラーコード）: <https://docs.basemachina.com/public_api/reference/>
+- サービスアカウントと OIDC 信頼ポリシーの設定: <https://docs.basemachina.com/service_account/>
+- `bm login`: <https://docs.basemachina.com/code_management/cli/login/>

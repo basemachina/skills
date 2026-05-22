@@ -4,14 +4,14 @@
 
 `defineAction` / `defineConfig` / `readFile` の引数仕様、JS アクションの宣言例、ビューコード同居時の TS 設定は**公式ドキュメントを都度 Open する**。記憶で書かない。
 
-- 公式ドキュメント: <https://docs.basemachina.com/preview/code_management/>
-- 設定ファイル: <https://docs.basemachina.com/preview/code_management/configuration/>
-- `defineConfig`: <https://docs.basemachina.com/preview/code_management/sdk/define_config/>
-- `defineAction`: <https://docs.basemachina.com/preview/code_management/sdk/define_action/>
-- `readFile`: <https://docs.basemachina.com/preview/code_management/sdk/read_file/>
-- コード取得設定との連携: <https://docs.basemachina.com/preview/code_management/examples/view_code_fetch/>
+- 公式ドキュメント: <https://docs.basemachina.com/code_management/>
+- 設定ファイル: <https://docs.basemachina.com/code_management/configuration/>
+- `defineConfig`: <https://docs.basemachina.com/code_management/sdk/define_config/>
+- `defineAction`: <https://docs.basemachina.com/code_management/sdk/define_action/>
+- `readFile`: <https://docs.basemachina.com/code_management/sdk/read_file/>
+- コード取得設定との連携: <https://docs.basemachina.com/code_management/examples/view_code_fetch/>
 - ビューコードの Git 管理: <https://docs.basemachina.com/view/code_editor/git_management/>
-- CI/CD: <https://docs.basemachina.com/preview/code_management/ci_cd/>
+- CI/CD: <https://docs.basemachina.com/code_management/ci_cd/>
 - SDK の型定義: `node_modules/@basemachina/sdk/dist/oac/index.d.ts`
 
 ## ワークフロー
@@ -46,7 +46,7 @@
 - `bm sync <環境ID>` での他環境への同期では、`developmentActions` は**対象外**になり同期先に反映されない
 - 同じ識別子（`id`）を `actions` と `developmentActions` の両方に書くとバリデーションエラーになる
 
-「このアクションは本番に出したくない」と言われたら、`actions` からの削除ではなく `developmentActions` への移動を検討する。フィールドの正確な仕様は <https://docs.basemachina.com/preview/code_management/configuration/> と <https://docs.basemachina.com/preview/code_management/sdk/define_config/> を都度確認する。
+「このアクションは本番に出したくない」と言われたら、`actions` からの削除ではなく `developmentActions` への移動を検討する。フィールドの正確な仕様は <https://docs.basemachina.com/code_management/configuration/> と <https://docs.basemachina.com/code_management/sdk/define_config/> を都度確認する。
 
 ## 削除の挙動（論理削除）
 

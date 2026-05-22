@@ -1,13 +1,13 @@
 ---
 name: bm-code-management
-description: "BaseMachina のコード管理を扱うときの skill。`defineAction` / `defineConfig` の TypeScript 設定編集、JavaScript アクションのコード本体（`readFile(...)` 参照先）の作成・編集、コードエディターのビューコードをコード取得設定と同じ repo で扱う作業、`bm pull` による Web UI 作成アクションの取り込み判断、`bm sync --dry` での差分プレビューを 1 つのドメインとして扱う。アクション実行や本番反映は扱わない。詳細は領域ごとに `references/` に分割。公式ドキュメント: https://docs.basemachina.com/preview/code_management/"
+description: "BaseMachina のコード管理を扱うときの skill。`defineAction` / `defineConfig` の TypeScript 設定編集、JavaScript アクションのコード本体（`readFile(...)` 参照先）の作成・編集、コードエディターのビューコードをコード取得設定と同じ repo で扱う作業、`bm pull` による Web UI 作成アクションの取り込み判断、`bm sync --dry` での差分プレビューを 1 つのドメインとして扱う。アクション実行や本番反映は扱わない。詳細は領域ごとに `references/` に分割。公式ドキュメント: https://docs.basemachina.com/code_management/"
 license: MIT
 allowed-tools: "Bash(bm sync --dry:*) Bash(bm --help:*) Bash(bm --version) Bash(npx tsc:*) Bash(yarn tsc:*) Bash(pnpm exec tsc:*) Bash(bunx tsc:*) Bash(npm i:*) Bash(yarn add:*) Bash(pnpm add:*) Bash(bun add:*) Bash(npm outdated:*) Bash(yarn outdated:*) Bash(pnpm outdated:*) Bash(bun outdated:*) Read Grep Glob Edit Write"
 ---
 
 # BaseMachina コード管理 skill
 
-コマンド・フラグ・型・ビュー連携の詳細は記憶で書かず、公式ドキュメント（<https://docs.basemachina.com/preview/code_management/>）と SDK / runtime の型定義（`node_modules/@basemachina/sdk` / `@basemachina/action`）を都度確認する。
+コマンド・フラグ・型・ビュー連携の詳細は記憶で書かず、公式ドキュメント（<https://docs.basemachina.com/code_management/>）と SDK / runtime の型定義（`node_modules/@basemachina/sdk` / `@basemachina/action`）を都度確認する。
 
 ## いつ使うか
 
@@ -70,8 +70,8 @@ allowed-tools: "Bash(bm sync --dry:*) Bash(bm --help:*) Bash(bm --version) Bash(
 - **エージェントから実行できるのは `bm sync --dry` のみ**（`allowed-tools` で制限）
 - 差分の意図が編集と一致するかを必ずユーザーに引き渡し、実反映は CI またはユーザー手動操作に委ねる
 - JavaScript アクションの `code` 本文は dry-run 出力では省略されるため、本文差分の確認には `git diff` を使う
-- フラグ詳細は `bm sync --help` または <https://docs.basemachina.com/preview/code_management/cli/sync/> を参照する
-- CI/CD の運用詳細は <https://docs.basemachina.com/preview/code_management/ci_cd/> を参照する。PR では `bm sync --dry`、マージ後や環境デプロイでは CI が `bm sync` / `bm sync <環境ID>` を担う前提で説明する
+- フラグ詳細は `bm sync --help` または <https://docs.basemachina.com/code_management/cli/sync/> を参照する
+- CI/CD の運用詳細は <https://docs.basemachina.com/code_management/ci_cd/> を参照する。PR では `bm sync --dry`、マージ後や環境デプロイでは CI が `bm sync` / `bm sync <環境ID>` を担う前提で説明する
 
 ## 共通: `bm pull` の扱い
 
@@ -79,7 +79,7 @@ allowed-tools: "Bash(bm sync --dry:*) Bash(bm --help:*) Bash(bm --version) Bash(
 - 主な更新対象は `src/actions/`、`src/bm-refs.ts`、`type.d.ts`、設定ファイルへの import / `actions` 追記
 - 既に設定ファイルに含まれているアクションの Web UI 変更は `bm pull` 対象外。Web UI 側の変更を取り込みたい場合は、設定ファイルを手動更新するか、設定を再ダウンロードして該当ファイルだけ差し替える
 - `bm pull` は対話確認後にファイルを書き込むため、エージェントが実行する場合は事前にユーザーへ確認する
-- 詳細は <https://docs.basemachina.com/preview/code_management/cli/pull/> を参照する
+- 詳細は <https://docs.basemachina.com/code_management/cli/pull/> を参照する
 
 ## 共通: 認証
 
@@ -87,14 +87,14 @@ allowed-tools: "Bash(bm sync --dry:*) Bash(bm --help:*) Bash(bm --version) Bash(
 
 ## 参照先
 
-- 公式ドキュメント（コード管理トップ）: <https://docs.basemachina.com/preview/code_management/>
-- 設定ファイル: <https://docs.basemachina.com/preview/code_management/configuration/>
-- `bm pull` CLI: <https://docs.basemachina.com/preview/code_management/cli/pull/>
-- `bm sync` CLI: <https://docs.basemachina.com/preview/code_management/cli/sync/>
-- CI/CD: <https://docs.basemachina.com/preview/code_management/ci_cd/>
+- 公式ドキュメント（コード管理トップ）: <https://docs.basemachina.com/code_management/>
+- 設定ファイル: <https://docs.basemachina.com/code_management/configuration/>
+- `bm pull` CLI: <https://docs.basemachina.com/code_management/cli/pull/>
+- `bm sync` CLI: <https://docs.basemachina.com/code_management/cli/sync/>
+- CI/CD: <https://docs.basemachina.com/code_management/ci_cd/>
 - JS アクション: <https://docs.basemachina.com/action/datasources/javascript_action/>
 - ビューコードの Git 管理: <https://docs.basemachina.com/view/code_editor/git_management/>
-- コード取得設定との連携: <https://docs.basemachina.com/preview/code_management/examples/view_code_fetch/>
+- コード取得設定との連携: <https://docs.basemachina.com/code_management/examples/view_code_fetch/>
 - SDK の型定義: `node_modules/@basemachina/sdk/dist/oac/index.d.ts`
 - JS アクション runtime 型: `node_modules/@basemachina/action/dist/*.d.ts`
 - CLI のフラグ一覧: `bm sync --help`

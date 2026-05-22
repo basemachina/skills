@@ -7,9 +7,9 @@
 ## 参照先
 
 - ビューコードの Git 管理: <https://docs.basemachina.com/view/code_editor/git_management/>
-- コード取得設定との連携: <https://docs.basemachina.com/preview/code_management/examples/view_code_fetch/>
-- 設定ファイル: <https://docs.basemachina.com/preview/code_management/configuration/>
-- CI/CD: <https://docs.basemachina.com/preview/code_management/ci_cd/>
+- コード取得設定との連携: <https://docs.basemachina.com/code_management/examples/view_code_fetch/>
+- 設定ファイル: <https://docs.basemachina.com/code_management/configuration/>
+- CI/CD: <https://docs.basemachina.com/code_management/ci_cd/>
 - `@basemachina/view` 型定義: <https://docs.basemachina.com/view/code_editor/download_dts_file/>
 
 ## ワークフロー
