@@ -13,6 +13,6 @@ jobs:
     name: Skill repository checks
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Validate skill metadata
         run: python3 scripts/validate-skills.py
