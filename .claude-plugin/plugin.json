@@ -1,0 +1,15 @@
+{
+  "name": "bm-skills",
+  "displayName": "BaseMachina Skills",
+  "version": "1.1.0",
+  "description": "BaseMachinaの公式ドキュメント調査、コード管理、公開API client実装を支援するskill群",
+  "author": {
+    "name": "BaseMachina",
+    "url": "https://github.com/basemachina"
+  },
+  "homepage": "https://github.com/basemachina/skills",
+  "repository": "https://github.com/basemachina/skills",
+  "license": "MIT",
+  "keywords": ["basemachina", "docs", "code-management", "public-api", "mcp"],
+  "skills": "./skills/"
+}

@@ -1,55 +1,49 @@
-# TS 設定（`defineAction` / `defineConfig`）
+# TypeScript設定
 
-`basemachina.config.ts`、アクション定義ファイル、必要に応じて同居するビューコードの TypeScript 設定編集ガイド。
+`basemachina.config.ts`、action・view definition、`readFile`で読み込むcodeの編集に使う。
 
-`defineAction` / `defineConfig` / `readFile` の引数仕様、JS アクションの宣言例、ビューコード同居時の TS 設定は**公式ドキュメントを都度 Open する**。記憶で書かない。
+## 確認するsource
 
-- 公式ドキュメント: <https://docs.basemachina.com/code_management/>
-- 設定ファイル: <https://docs.basemachina.com/code_management/configuration/>
-- `defineConfig`: <https://docs.basemachina.com/code_management/sdk/define_config/>
-- `defineAction`: <https://docs.basemachina.com/code_management/sdk/define_action/>
-- `readFile`: <https://docs.basemachina.com/code_management/sdk/read_file/>
-- コード取得設定との連携: <https://docs.basemachina.com/code_management/examples/view_code_fetch/>
-- ビューコードの Git 管理: <https://docs.basemachina.com/view/code_editor/git_management/>
-- CI/CD: <https://docs.basemachina.com/code_management/ci_cd/>
-- SDK の型定義: `node_modules/@basemachina/sdk/dist/oac/index.d.ts`
+- [コード管理](https://docs.basemachina.com/code_management/)
+- [設定ファイル](https://docs.basemachina.com/code_management/configuration/)
+- [`defineConfig`](https://docs.basemachina.com/code_management/sdk/define_config/)
+- [`defineAction`](https://docs.basemachina.com/code_management/sdk/define_action/)
+- [`defineView`](https://docs.basemachina.com/code_management/sdk/define_view/)
+- [`readFile`](https://docs.basemachina.com/code_management/sdk/read_file/)
+- [`bm pull`](https://docs.basemachina.com/code_management/cli/pull/)
+- [`bm sync`](https://docs.basemachina.com/code_management/cli/sync/)
+- SDK型: `node_modules/@basemachina/sdk/dist/oac/index.d.ts`
 
-## ワークフロー
+## 設定rule
 
-1. **編集**: `basemachina.config.ts` と既存のアクション定義ファイルを Read してパターンを把握し、必要な変更を Edit / Write する。JavaScript アクションのコード本体パスは固定せず、`readFile(...)` の引数と既存 repo 構成から決める
-2. **型チェック**: 検出した PM の TypeScript チェックコマンド（SKILL.md § パッケージマネージャー）でエラーがないことを確認する。エラーが出たら下記「型エラー」の手順で解消してから先に進む
-3. **差分プレビュー**: `bm sync --dry` を実行し、変更したアクション ID と差分種別（create / update / no-op）が編集意図と一致しているかを確認する。JavaScript アクションのコード本文差分は dry-run 出力では省略されるため、`git diff` で確認する
-4. **引き渡し**: 実行したコマンド・変更件数・注目すべきアクション ID を構造化してユーザーに返す
+- deploy対象のaction・viewは`actions`・`views`に置く
+- development限定のdefinitionは`developmentActions`・`developmentViews`に置く。development環境には反映されるが、環境間syncからは除外される
+- 同じIDを通常arrayとdevelopment限定arrayの両方へ置かない
+- 既存action・viewのID変更には`previousId`を使う。`bm sync --dry`でrenameを確認し、反映後のfollow-upで`previousId`を削除する
+- `readFile(...)`のpathはdefinition fileからの相対path。既存repoの慣習を確認して配置する
+- 複雑なvisual editor viewの`config`を手書きする前に、インストール済み型定義を読む
 
-## ビューコード同居時
+## Workflow
 
-ビューの設定はコード管理の直接対象外。ビュー内コードを同じ repo で管理する場合は、公式 docs の「コード取得設定との連携」と「Git管理」を確認し、アクションでコードを取得する運用として扱う。
+1. 現在のconfigと隣接definitionを読む
+2. definition、import、config arrayへ必要最小の一貫した変更を行う
+3. repoのTypeScript checkを実行する
+4. `bm sync --dry`を実行し、create、update、ID change、re-enable、no-change、migration、skipを編集意図と照合する
+5. JavaScript action・view code本文は`git diff`で確認する
+6. 影響ID、validation結果、CIまたはユーザーへ残した非dry-run手順を報告する
 
-- `.tsx` を型チェック対象に含める場合は `tsconfig.json` に `jsx: "react-jsx"` と `views/**/*.tsx` 相当の include が必要か確認する
-- `@basemachina/view` は React 型を参照するため、`react` / `@types/react` のインストール状態を確認する
-- `tsconfig` の継承元は docs と installed `@basemachina/sdk` の内容を確認する。アクションとビューを同居させる場合は `@basemachina/sdk/tsconfig.code.json` を基本にする
-- ビューコードの build・アップロード・環境別 branch 切り替えは CI/CD とコード取得設定の領域なので、実装前に [`view-code.md`](view-code.md) も読む
+## Configから外した場合とdisable
 
-## 型エラー
+configからaction・viewを削除しても、defaultではBaseMachina環境は変更されない。
 
-`bm sync --dry` が「設定ファイル読み込み」段階で失敗したら:
+- `--with-disable`なしでは、configにないコード管理action・viewは変更されない
+- `bm sync --dry --with-disable`で、development環境でdisable予定のコード管理項目をpreviewする
+- 非dry-runの`--with-disable`は有効状態を変更するが、action・view dataやIDを削除しない
+- definitionを戻してsyncするとdevelopment環境で再度有効化される
+- configにないWeb管理項目は、`--with-disable`を使ってもWeb管理のまま残る
 
-1. PM 検出済みの TypeScript チェックコマンドで全型エラーを一括表示する
-2. `node_modules/@basemachina/sdk/dist/oac/index.d.ts` を Read して正しい型を確認する
-3. 修正後に `bm sync --dry` を再実行する
+このskillから非dry-runのdisableを実行しない。
 
-## 開発環境限定のアクション（`developmentActions`）
+## Pullの挙動
 
-`defineConfig` は `actions` と `developmentActions` の 2 つにアクションを振り分けられる。「開発環境では動かしたいが検証・本番には流したくない」アクションは `developmentActions` に置く。
-
-- `bm sync` での開発環境への反映では、`developmentActions` も `actions` と同じく扱われる（作成・更新・再有効化・無効化）
-- `bm sync <環境ID>` での他環境への同期では、`developmentActions` は**対象外**になり同期先に反映されない
-- 同じ識別子（`id`）を `actions` と `developmentActions` の両方に書くとバリデーションエラーになる
-
-「このアクションは本番に出したくない」と言われたら、`actions` からの削除ではなく `developmentActions` への移動を検討する。フィールドの正確な仕様は <https://docs.basemachina.com/code_management/configuration/> と <https://docs.basemachina.com/code_management/sdk/define_config/> を都度確認する。
-
-## 削除の挙動（論理削除）
-
-公式ドキュメントには明記が無いがエージェントが取り違えやすい挙動:
-
-`basemachina.config.ts` から import を外しても Web UI 上のアクション行や revision は残り、該当環境で無効化されるだけ（import を戻せば復元可）。「削除したい」と言われたら、この挙動を先に説明して齟齬を防ぐ。
+`bm pull`はconfigにまだない対象Web管理definitionを取り込む。action・view definition、code file、参照定数、型、import、config arrayを生成・更新する。既存definition fileを上書きせず、config済みaction・viewに対する後続のWeb UI変更も取り込まない。
