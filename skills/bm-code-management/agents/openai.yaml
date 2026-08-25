@@ -1,7 +1,7 @@
 interface:
   display_name: "BaseMachina Code Management"
-  short_description: "BaseMachina のコード管理作業を支援"
-  default_prompt: "Use $bm-code-management to edit BaseMachina code-management configuration, handle bm pull intake, and preview bm sync changes."
+  short_description: "BaseMachinaのコード管理設定を安全に編集・レビュー"
+  default_prompt: "$bm-code-management を使ってBaseMachinaのコード管理設定を編集し、bm pullの取り込みとbm syncのdry-run差分を確認してください。"
 
 policy:
   allow_implicit_invocation: true

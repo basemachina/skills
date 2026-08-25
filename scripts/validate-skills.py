@@ -10,10 +10,16 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SKILLS_DIR = ROOT / "skills"
 MARKETPLACE_PATH = ROOT / ".claude-plugin" / "marketplace.json"
+CLAUDE_PLUGIN_PATH = ROOT / ".claude-plugin" / "plugin.json"
+CODEX_PLUGIN_PATH = ROOT / ".codex-plugin" / "plugin.json"
 
 NAME_RE = re.compile(r"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$")
+SEMVER_RE = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$")
 FRONTMATTER_KEY_RE = re.compile(r"^([A-Za-z0-9_-]+):(?:\s*(.*))?$")
 INSTALL_METADATA_RE = re.compile(r"^\s*github-[A-Za-z0-9_-]+:")
+OPENAI_INTERFACE_RE = re.compile(
+    r'^\s{2}(display_name|short_description|default_prompt):\s*["\'](.*)["\']\s*$'
+)
 
 
 def error(message: str) -> None:
@@ -104,6 +110,17 @@ def validate_skill(skill_dir: Path) -> list[str]:
         for required in ("display_name:", "short_description:", "default_prompt:"):
             if required not in contents:
                 problems.append(f"{openai_yaml.relative_to(ROOT)}: missing interface.{required.rstrip(':')}")
+        interface = dict(OPENAI_INTERFACE_RE.findall(contents))
+        short_description = interface.get("short_description", "")
+        if short_description and not 25 <= len(short_description) <= 64:
+            problems.append(
+                f"{openai_yaml.relative_to(ROOT)}: interface.short_description must be 25-64 characters"
+            )
+        default_prompt = interface.get("default_prompt", "")
+        if default_prompt and f"${name}" not in default_prompt:
+            problems.append(
+                f"{openai_yaml.relative_to(ROOT)}: interface.default_prompt must mention '${name}'"
+            )
 
     return problems
 
@@ -130,12 +147,83 @@ def validate_marketplace() -> list[str]:
         if not isinstance(plugin, dict):
             problems.append(f".claude-plugin/marketplace.json: plugins[{index}] must be an object")
             continue
-        for required in ("name", "source", "description", "version", "license", "homepage", "repository", "skills"):
+        for required in ("name", "source", "description", "version", "license", "homepage", "repository"):
             if not plugin.get(required):
                 problems.append(f".claude-plugin/marketplace.json: plugins[{index}] missing '{required}'")
         skills_path = plugin.get("skills")
         if isinstance(skills_path, str) and not (ROOT / skills_path).exists():
             problems.append(f".claude-plugin/marketplace.json: plugins[{index}].skills path does not exist")
+
+    return problems
+
+
+def load_json_object(path: Path) -> tuple[dict[str, object] | None, list[str]]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return None, [f"{path.relative_to(ROOT)} is missing"]
+    except json.JSONDecodeError as exc:
+        return None, [f"{path.relative_to(ROOT)}: invalid JSON: {exc}"]
+
+    if not isinstance(payload, dict):
+        return None, [f"{path.relative_to(ROOT)}: root must be an object"]
+    return payload, []
+
+
+def validate_plugin_manifests() -> list[str]:
+    problems: list[str] = []
+    claude, claude_problems = load_json_object(CLAUDE_PLUGIN_PATH)
+    codex, codex_problems = load_json_object(CODEX_PLUGIN_PATH)
+    problems.extend(claude_problems)
+    problems.extend(codex_problems)
+
+    for path, manifest in ((CLAUDE_PLUGIN_PATH, claude), (CODEX_PLUGIN_PATH, codex)):
+        if manifest is None:
+            continue
+        for required in ("name", "version", "description", "author", "homepage", "repository", "license"):
+            if not manifest.get(required):
+                problems.append(f"{path.relative_to(ROOT)}: missing '{required}'")
+        version = manifest.get("version")
+        if isinstance(version, str) and SEMVER_RE.fullmatch(version) is None:
+            problems.append(f"{path.relative_to(ROOT)}: version must use semantic versioning")
+        skills_path = manifest.get("skills")
+        if not isinstance(skills_path, str) or not (ROOT / skills_path).is_dir():
+            problems.append(f"{path.relative_to(ROOT)}: skills must point to the skills directory")
+
+    if claude is not None and codex is not None:
+        for field in ("name", "version", "description"):
+            if claude.get(field) != codex.get(field):
+                problems.append(f"plugin manifests must use the same '{field}'")
+
+    if codex is not None:
+        interface = codex.get("interface")
+        if not isinstance(interface, dict):
+            problems.append(".codex-plugin/plugin.json: interface must be an object")
+        else:
+            for required in (
+                "displayName",
+                "shortDescription",
+                "longDescription",
+                "developerName",
+                "category",
+                "capabilities",
+                "defaultPrompt",
+            ):
+                if not interface.get(required):
+                    problems.append(f".codex-plugin/plugin.json: interface missing '{required}'")
+
+    marketplace, _ = load_json_object(MARKETPLACE_PATH)
+    if marketplace is not None and claude is not None:
+        for index, plugin in enumerate(marketplace.get("plugins", [])):
+            if isinstance(plugin, dict) and plugin.get("name") == claude.get("name"):
+                if plugin.get("version") != claude.get("version"):
+                    problems.append(
+                        f".claude-plugin/marketplace.json: plugins[{index}].version must match plugin.json"
+                    )
+                if plugin.get("strict") is not True:
+                    problems.append(
+                        f".claude-plugin/marketplace.json: plugins[{index}].strict must be true"
+                    )
 
     return problems
 
@@ -151,6 +239,7 @@ def main() -> int:
         problems.extend(validate_skill(skill_dir))
 
     problems.extend(validate_marketplace())
+    problems.extend(validate_plugin_manifests())
 
     if problems:
         for problem in problems:

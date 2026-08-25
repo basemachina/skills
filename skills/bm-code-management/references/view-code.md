@@ -1,25 +1,49 @@
-# ビューコード・コード取得設定連携
+# View definitionとcode
 
-コードエディターのビューコードを、コード管理 repo に同居させる作業のガイド。
+コードエディター・ビジュアルエディターのviewと、外部から取得するview codeを扱う。
 
-ビューの設定はコード管理の直接対象外。ビュー内コードだけを repo で管理し、コード取得設定を有効化したビューがアクション経由で取得する、という運用として扱う。
+## 管理方法を選ぶ
 
-## 参照先
+### 直接コード管理
 
-- ビューコードの Git 管理: <https://docs.basemachina.com/view/code_editor/git_management/>
-- コード取得設定との連携: <https://docs.basemachina.com/code_management/examples/view_code_fetch/>
-- 設定ファイル: <https://docs.basemachina.com/code_management/configuration/>
-- CI/CD: <https://docs.basemachina.com/code_management/ci_cd/>
-- `@basemachina/view` 型定義: <https://docs.basemachina.com/view/code_editor/download_dts_file/>
+コード管理対象のviewには`defineView`を使う。
 
-## ワークフロー
+- コードエディターでは`type: "codeEditor"`と`code`を指定し、通常は`readFile(...)`で読み込む
+- ビジュアルエディターでは`type: "visualEditor"`と`config`を指定し、必要に応じて`queryParameters`を追加する
+- `defineConfig`の`views`または`developmentViews`へ追加する
+- 意図したID変更では`previousId`を使う
+- TypeScriptと`bm sync --dry`で検証する
 
-1. **境界確認**: 依頼がビュー設定の変更なのか、repo 内のビューコード変更なのかを切り分ける。ビュー設定そのものは BaseMachina UI 側の管理対象として扱う
-2. **既存構成確認**: `views/`、build script、ストレージアップロード workflow、コード取得用アクションの有無を確認する。無ければ公式 docs の構成例を参照して、必要最小の追加にする
-3. **型設定確認**: `.tsx` を扱う場合は `tsconfig.json` の `jsx: "react-jsx"`、`views/**/*.tsx` 相当の include、`react` / `@types/react` のインストール状態を確認する
-4. **取得経路確認**: GCS / S3 / GitHub API などの取得元はプロジェクト既存の運用を優先する。未決定なら docs の選択肢を示してユーザーに確認する
-5. **検査**: 検出した PM の TypeScript チェックと、必要なら view build script を実行する。`bm sync --dry` はコード取得用アクションなど BaseMachina 設定側の差分確認に使う
+### 外部code取得workflow
 
-## CI/CD の扱い
+storage上のcodeをaction経由で読み込む設定が意図されている場合だけ、code取得workflowを使う。
 
-PR では `bm sync --dry` による差分確認、マージ後や環境デプロイでは CI が `bm sync` / `bm sync <環境ID>` とビューコードの build・アップロードを担う前提で説明する。エージェントから本番反映やストレージアップロードを実行しない。
+- view code、build、storage upload、環境別pathを既存repoの運用に合わせる
+- code取得設定が有効なコードエディターviewはWeb管理として扱う。`bm pull`の対象外
+- production storageへのuploadや非dry-runのBaseMachina syncを実行しない
+
+## TypeScript確認
+
+- actionとviewを同じrepoで扱う場合は`@basemachina/sdk/tsconfig.code.json`を継承する
+- `.tsx`では`jsx: "react-jsx"`とview fileを含むinclude patternを確認する
+- 型参照に必要な`react`、`@types/react`、`@basemachina/view`を確認する
+- 大きなvisual editor `config`を編集する前にインストール済みSDK型を読む
+
+## Workflow
+
+1. viewが直接コード管理か、外部code取得設定かを特定する
+2. 現在のdefinition、`readFile(...)`参照先、build script、CI workflowを読む
+3. 選んだ管理方法を維持する最小の変更を行う
+4. TypeScriptと既存のview build commandを実行する
+5. 直接コード管理では`bm sync --dry`と`git diff`で確認する
+6. 外部code取得では、CIまたはユーザーが行うbuild・upload手順を報告する
+
+## 主なsource
+
+- [`defineView`](https://docs.basemachina.com/code_management/sdk/define_view/)
+- [`defineConfig`](https://docs.basemachina.com/code_management/sdk/define_config/)
+- [`readFile`](https://docs.basemachina.com/code_management/sdk/read_file/)
+- [設定ファイル](https://docs.basemachina.com/code_management/configuration/)
+- [コード取得設定との連携](https://docs.basemachina.com/code_management/examples/view_code_fetch/)
+- [ビューコードのGit管理](https://docs.basemachina.com/view/code_editor/git_management/)
+- [`@basemachina/view`型定義](https://docs.basemachina.com/view/code_editor/download_dts_file/)

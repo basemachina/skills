@@ -1,0 +1,28 @@
+{
+  "name": "bm-skills",
+  "version": "1.1.0",
+  "description": "BaseMachinaの公式ドキュメント調査、コード管理、公開API client実装を支援するskill群",
+  "author": {
+    "name": "BaseMachina",
+    "url": "https://github.com/basemachina"
+  },
+  "homepage": "https://github.com/basemachina/skills",
+  "repository": "https://github.com/basemachina/skills",
+  "license": "MIT",
+  "keywords": ["basemachina", "docs", "code-management", "public-api", "mcp"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "BaseMachina Skills",
+    "shortDescription": "公式docs調査とコード管理・公開API開発を支援",
+    "longDescription": "現在のBaseMachina公式ドキュメントを調査し、安全なコード管理と公開API client実装を支援します。",
+    "developerName": "BaseMachina",
+    "category": "Developer Tools",
+    "capabilities": ["Research", "Write"],
+    "websiteURL": "https://docs.basemachina.com/",
+    "defaultPrompt": [
+      "現在のBaseMachina公式docsを確認し、根拠URL付きで回答してください。",
+      "BaseMachinaのコード管理変更を安全にレビューしてください。",
+      "BaseMachina公開APIを呼び出すコードを作成してください。"
+    ]
+  }
+}

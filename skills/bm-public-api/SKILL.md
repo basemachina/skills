@@ -1,59 +1,59 @@
 ---
 name: bm-public-api
-description: "BaseMachina の公開API（REST API）を外部システム・CI/CD・自社スクリプトから呼び出すコードを書くときの skill。アクションの実行、アクション一覧・詳細取得、環境一覧取得を HTTP で行う。`bm login` の JWT や、GitHub Actions / Google Cloud / AWS / 自社 OIDC IdP の ID Token をトークン交換した認証セットアップ、レスポンスとエラーのハンドリングを扱う。「公開API」「public API」「アクションを API で実行」「外部システムや CI から BaseMachina のアクションを呼び出す」「BaseMachina を curl で叩く」といった相談で使う。アクション定義の編集や `bm sync`（設定のコード管理）は bm-code-management、docs の仕様検索は basemachina-docs を使う。公式ドキュメント: https://docs.basemachina.com/public_api/"
+description: "BaseMachinaの公開API（REST API）を外部system、CI/CD、自社scriptから呼び出すcodeを書くskill。環境・actionの一覧と詳細、action実行、review依頼の作成・状態取得・承認後実行を扱う。`bm login`のJWT、GitHub Actions・Google Cloud・AWS・自社OIDC IdPのID Token交換、response・error処理、OpenAPI client生成を実装するときに使う。action定義や`bm sync`はbm-code-management、仕様調査だけならbasemachina-docsを使う。実際のAPI呼び出しは行わない。"
 license: MIT
 allowed-tools: "Read Grep Glob Edit Write WebSearch WebFetch"
 ---
 
-# BaseMachina 公開API skill
+# BaseMachina 公開API
 
-公開APIは、ベースマキナのリソースを外部システムから操作する REST API。環境の一覧取得、アクションの一覧・詳細取得・実行を HTTP で行える。
+公開APIはBaseMachinaのresourceを外部systemから操作するREST API。現在のendpoint、request・response、error codeは記憶で書かず、[公式ガイド](https://docs.basemachina.com/public_api/)、[API reference](https://docs.basemachina.com/public_api/reference/)、[OpenAPI schema](https://docs.basemachina.com/openapi/public_api.yaml)を都度確認する。
 
-エンドポイント・リクエスト/レスポンス形式・認証手順・エラーコードは記憶で書かず、公式ドキュメント（<https://docs.basemachina.com/public_api/>）と API リファレンス（<https://docs.basemachina.com/public_api/reference/>）を都度 Open して確認する。
+## 対象
 
-## いつ使うか
+- 有効な環境の一覧取得
+- actionの一覧・詳細取得
+- review不要actionの実行
+- review必須actionに対するreview依頼の作成・状態取得・承認後実行
+- `bm login`のJWTまたは外部OIDC ID Token交換による認証
+- response・error処理、OpenAPIからのclient生成
 
-- 自社バックエンド・スクリプト・ツールに、ベースマキナのアクション実行を組み込むコードを書く
-- CI/CD のジョブから公開API を呼び出して定型作業を自動化する
-- 公開API の認証（`bm login` の JWT、または外部 OIDC のトークン交換）をセットアップする
-- 公開API のレスポンスやエラーを扱うコードを書く
-- 公開API の呼び出しが認証エラー等で失敗する原因を切り分ける
+action・datasourceなどの設定作成・編集・削除は公開APIの対象外。管理画面または`bm-code-management`を使う。
 
-## いつ使わないか
+## Guardrail
 
-- アクション定義（`defineAction` / `defineConfig`）の編集や `bm sync` での反映 → `bm-code-management`
-- ベースマキナの機能・制約・仕様の一般的な質問 → `basemachina-docs`
-- アクションやデータソースの設定変更（作成・編集・削除）。公開API はリソースの取得と実行のみで、設定変更は提供しない。設定変更は管理画面またはコード管理で行う
+action実行には、mail送信、DB書き込み、外部service呼び出しなど取り消せない副作用がありうる。review依頼の作成も承認workflowや通知を開始しうる。
 
-## ガードレール（最重要）
+- APIを呼び出すcodeだけを書く。実際のrequest、特に`executions`とreview依頼作成はユーザーまたはCIに委ねる
+- `allowed-tools`に`curl`などのHTTP実行toolを含めない
+- 引き渡し時に対象環境・action・引数・想定される副作用を明記する
+- retryを一律に実装しない。HTTP method、idempotency、副作用、現在のAPI referenceを確認して判断する
 
-公開API のアクション実行（`executions`）には**副作用がある**。メール送信、DB 書き込み、外部サービス呼び出しなど、取り消せない操作がアクション本体で起きうる。
+## Workflow
 
-- エージェントは公開API を**呼び出すコードを書く**。実際の呼び出し、特に `executions` の実行はユーザーまたは CI に委ねる
-- この skill の `allowed-tools` に `curl` 等の HTTP 実行ツールは含めない。動作確認はユーザーに依頼する
-- コードを引き渡すときは、対象アクションを実行すると何が起きるか（副作用）を必ず添える
+1. 対象project、環境、actionを特定する。actionは識別子またはaction IDで参照する
+2. [公開APIから実行できないaction](https://docs.basemachina.com/public_api/#%E5%85%AC%E9%96%8Bapi%E3%81%8B%E3%82%89%E5%AE%9F%E8%A1%8C%E3%81%A7%E3%81%8D%E3%81%AA%E3%81%84%E3%82%A2%E3%82%AF%E3%82%B7%E3%83%A7%E3%83%B3)に該当しないか確認する
+3. local検証なら`bm login`のJWT、CI・cloudなら外部OIDC ID Token交換を選ぶ
+4. method、path、query、request・response schemaをOpenAPIで確認してcodeを書く
+5. review不要actionはexecution endpointを使う。review必須actionは直接実行すると`403 forbidden`になるため、review依頼を作成し、状態を取得して、承認済みかつ自動実行されていない場合にreview依頼のexecution endpointを使う
+6. `auto_execute_on_approval`を指定する場合は、承認後に誰が実行する設計かを明確にし、二重実行を避ける
+7. 通常endpointのRFC 9457 Problem Detailsと、`/token`のOAuth error responseを分けて処理する
+8. 変更file、endpoint、環境・action ID、引数、副作用、認証前提、ユーザーまたはCIへ残した動作確認を報告する
 
-## ワークフロー
+## 認証
 
-1. **対象アクションの確認**: 呼び出す環境とアクションを特定する。アクションは識別子またはアクションID で参照する。一部のアクション（ファイルパラメーターを持つもの等）は公開API から実行できないため、対象が該当しないかを docs で確認する
-2. **認証方式の選択**: 下記「認証の選び方」で `bm login` の JWT か、外部 OIDC のトークン交換かを決める
-3. **呼び出しコードの作成**: エンドポイントのメソッド・パス・クエリパラメーター・リクエスト/レスポンス構造は API リファレンスを Open して確認し、それに沿って書く
-4. **エラー処理**: エラーは RFC 9457 Problem Details 形式で返り、`code` フィールドで分類される。`code` で分岐するコードにする。各 `code` の意味と HTTP ステータスは API リファレンスを参照する。`4xx` はリクエスト側の問題なのでリトライ対象にしない
-5. **引き渡し**: 書いたファイルと役割、呼び出す環境ID・アクションID（識別子）・引数、`executions` を含む場合は副作用、動作確認の前提（`bm login` 済みか、OIDC 信頼ポリシー設定済みか）を構造化して返す
+`/token`以外のendpointは`Authorization: Bearer <token>`で保護される。
 
-## 認証の選び方
+- **local開発**: `bm login`で取得したJWTをそのままBearer tokenに使う。browser対話flowは自動化せず、未loginならユーザーに依頼する
+- **CI/CD・cloud・自社IdP**: 外部OIDC ID Tokenをそのまま送らず、`/token`でBaseMachina access tokenへ交換する。事前にprojectへのservice account割り当てとOIDC trust policyが必要
 
-公開API のエンドポイントは `Authorization: Bearer <token>` で保護されている。`Bearer` に渡せるトークンは呼び出し元によって変わる。
+ID Token取得、token交換のrequest・response、Issuer・Audience・Bound Claimsは[認証ガイド](https://docs.basemachina.com/public_api/authentication/)と[service account](https://docs.basemachina.com/service_account/)で確認する。access tokenは`expires_in`まで再利用し、期限切れ後に再交換する。
 
-- **ローカル端末からの検証・開発**: `bm login` で取得した JWT を**そのまま** `Authorization: Bearer` に使える（トークン交換は不要）。`bm login` はブラウザ対話フローなのでエージェントから実行せず、未ログインならユーザーに依頼する
-- **CI/CD・クラウド・自社IdP からの呼び出し**: 外部 OIDC IdP の ID Token は**そのままでは公開API に使えない**。①呼び出し元で ID Token を取得し、②トークン交換エンドポイントでベースマキナのアクセストークンに交換し、③そのアクセストークンを `Authorization: Bearer` に使う、という手順になる。交換を省いて ID Token を直接渡すと `401` になる。アクセストークンには有効期限があり、期限まで使い回して切れたら再交換する。事前にプロジェクトへのサービスアカウント割り当てと OIDC 信頼ポリシーの登録が必要で、これはエージェントの作業対象外なので未設定ならユーザーに依頼する
+## 主なsource
 
-シナリオ別（GitHub Actions / Google Cloud / AWS / 自社IdP）の ID Token 取得手順、トークン交換エンドポイントのパス・リクエスト/レスポンス形式、OIDC 信頼ポリシーの設定値は、docs の「認証して呼び出す」を Open して確認する。
-
-## 参照先
-
-- 公開APIとは: <https://docs.basemachina.com/public_api/>
-- 認証して呼び出す: <https://docs.basemachina.com/public_api/authentication/>
-- API リファレンス（エンドポイント・パラメーター・レスポンス・エラーコード）: <https://docs.basemachina.com/public_api/reference/>
-- サービスアカウントと OIDC 信頼ポリシーの設定: <https://docs.basemachina.com/service_account/>
-- `bm login`: <https://docs.basemachina.com/code_management/cli/login/>
+- [公開APIとは](https://docs.basemachina.com/public_api/)
+- [認証して呼び出す](https://docs.basemachina.com/public_api/authentication/)
+- [API reference](https://docs.basemachina.com/public_api/reference/)
+- [OpenAPI schema](https://docs.basemachina.com/openapi/public_api.yaml)
+- [service accountとOIDC trust policy](https://docs.basemachina.com/service_account/)
+- [`bm login`](https://docs.basemachina.com/code_management/cli/login/)
