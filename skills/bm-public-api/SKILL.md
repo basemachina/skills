@@ -33,7 +33,7 @@ action実行には、mail送信、DB書き込み、外部service呼び出しな�
 
 1. 対象project、環境、actionを特定する。actionは識別子またはaction IDで参照する
 2. [公開APIから実行できないaction](https://docs.basemachina.com/public_api/#%E5%85%AC%E9%96%8Bapi%E3%81%8B%E3%82%89%E5%AE%9F%E8%A1%8C%E3%81%A7%E3%81%8D%E3%81%AA%E3%81%84%E3%82%A2%E3%82%AF%E3%82%B7%E3%83%A7%E3%83%B3)に該当しないか確認する
-3. local検証なら`bm login`のJWT、CI・cloudなら外部OIDC ID Token交換を選ぶ
+3. local検証なら`bm login` + `bm print-access-token`で取り出すJWT、CI・cloudなら外部OIDC ID Token交換を選ぶ
 4. method、path、query、request・response schemaをOpenAPIで確認してcodeを書く
 5. review不要actionはexecution endpointを使う。review必須actionは直接実行すると`403 forbidden`になるため、review依頼を作成し、状態を取得して、承認済みかつ自動実行されていない場合にreview依頼のexecution endpointを使う
 6. `auto_execute_on_approval`を指定する場合は、承認後に誰が実行する設計かを明確にし、二重実行を避ける
@@ -44,10 +44,10 @@ action実行には、mail送信、DB書き込み、外部service呼び出しな�
 
 `/token`以外のendpointは`Authorization: Bearer <token>`で保護される。
 
-- **local開発**: `bm login`で取得したJWTをそのままBearer tokenに使う。browser対話flowは自動化せず、未loginならユーザーに依頼する
+- **local開発**: `bm login`でJWTが`~/.basemachina/credentials.json`に保存される。`bm print-access-token`がそのJWTを標準出力に出すので、`export BM_TOKEN=$(bm print-access-token)`のように環境変数へ渡してBearer tokenに使う。credentials.jsonを直接読むcodeは書かない。browser対話flowは自動化せず、未loginならユーザーに`bm login`を依頼する
 - **CI/CD・cloud・自社IdP**: 外部OIDC ID Tokenをそのまま送らず、`/token`でBaseMachina access tokenへ交換する。事前にprojectへのservice account割り当てとOIDC trust policyが必要
 
-ID Token取得、token交換のrequest・response、Issuer・Audience・Bound Claimsは[認証ガイド](https://docs.basemachina.com/public_api/authentication/)と[service account](https://docs.basemachina.com/service_account/)で確認する。access tokenは`expires_in`まで再利用し、期限切れ後に再交換する。
+ID Token取得、token交換のrequest・response、Issuer・Audience・Bound Claimsは[認証ガイド](https://docs.basemachina.com/public_api/authentication/)と[service account](https://docs.basemachina.com/service_account/)で確認する。access tokenは`expires_in`まで再利用し、期限切れ後に再交換する。`bm print-access-token`は未loginだとexit code 1で失敗し、tokenの有効期限も検証しない。期限切れのまま渡すと公開API側で401になるので、401が返ったら`bm login`をやり直す。
 
 ## 主なsource
 
@@ -57,3 +57,4 @@ ID Token取得、token交換のrequest・response、Issuer・Audience・Bound Cl
 - [OpenAPI schema](https://docs.basemachina.com/openapi/public_api.yaml)
 - [service accountとOIDC trust policy](https://docs.basemachina.com/service_account/)
 - [`bm login`](https://docs.basemachina.com/code_management/cli/login/)
+- [`bm print-access-token`](https://docs.basemachina.com/code_management/cli/print_access_token/)
