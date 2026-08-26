@@ -34,11 +34,11 @@ gh skill install basemachina/skills bm-public-api --agent codex --scope user
 
 repo 単位で使う場合は `--scope project` を指定します。対応 agent の最新一覧は `gh skill install --help` で確認してください。
 
-version を省略すると、latest release tag、次に default branch の HEAD の順で解決されます。再現性が必要な場合は release tag または commit SHA に固定します。
+version を省略すると、latest release tag、次に default branch の HEAD の順で解決されます。再現性が必要な場合は release tag または commit SHA に固定します。指定できるタグは [releases](https://github.com/basemachina/skills/releases) で確認してください。
 
 ```bash
-gh skill install basemachina/skills bm-code-management@v1.0.2 --agent codex --scope user
-gh skill install basemachina/skills bm-public-api --pin v1.0.2 --agent codex --scope user
+gh skill install basemachina/skills bm-code-management@VERSION --agent codex --scope user
+gh skill install basemachina/skills bm-public-api --pin VERSION --agent codex --scope user
 ```
 
 更新の確認と適用:
