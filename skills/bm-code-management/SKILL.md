@@ -1,8 +1,8 @@
 ---
 name: bm-code-management
-description: "BaseMachinaのコード管理repoを編集・レビューするskill。`defineAction`、`defineView`、`defineConfig`のTypeScript設定、`readFile`で読み込むJavaScriptアクション・ビューコード、`bm pull`によるWeb UIからの取り込み、型チェック、安全な`bm sync --dry` previewを扱う。アクション実行や`--dry`なしの環境変更には使わない。"
+description: "BaseMachinaのコード管理repoを編集・レビューするskill。`defineAction`、`defineView`、`defineConfig`のTypeScript設定、`readFile`で読み込むJavaScriptアクション・ビューコード、`bm pull`によるWeb UIからの取り込み、型チェック、安全な`bm sync --dry` previewと、sync前の`bm preview action`による動作確認を扱う。agent自身によるアクション実行や`--dry`なしの環境変更には使わない。"
 license: MIT
-allowed-tools: "Bash(bm sync --dry:*) Bash(bm --help:*) Bash(bm --version) Bash(npx tsc:*) Bash(yarn tsc:*) Bash(pnpm exec tsc:*) Bash(bunx tsc:*) Bash(npm i:*) Bash(yarn add:*) Bash(pnpm add:*) Bash(bun add:*) Bash(npm outdated:*) Bash(yarn outdated:*) Bash(pnpm outdated:*) Bash(bun outdated:*) Read Grep Glob Edit Write"
+allowed-tools: "Bash(bm sync --dry:*) Bash(bm preview action --help) Bash(bm --help:*) Bash(bm --version) Bash(npx tsc:*) Bash(yarn tsc:*) Bash(pnpm exec tsc:*) Bash(bunx tsc:*) Bash(npm i:*) Bash(yarn add:*) Bash(pnpm add:*) Bash(bun add:*) Bash(npm outdated:*) Bash(yarn outdated:*) Bash(pnpm outdated:*) Bash(bun outdated:*) Read Grep Glob Edit Write"
 ---
 
 # BaseMachina コード管理
@@ -48,7 +48,7 @@ Yarn Berryには同等の標準`outdated` workflowがない。利用中のrepo�
 - 環境間previewでは`--dry`を維持し、target、`--from`、`--with-disable`、`--pin-version`をユーザーと確認する
 - JavaScriptアクション・ビューのsourceは`git diff`でも確認する。dry-runではcode本文の差分が省略されることがある
 - 実反映はreview済みCIまたはユーザーの明示操作に委ねる
-- testを含め、BaseMachina actionを実行しない
+- agent自身はBaseMachina actionを実行しない。例外は、ユーザーが明示的に許可した`bm preview action --terminal`のみ。browser modeの起動は実行ではなく、実行するのはユーザー
 
 詳細は[`bm sync`](https://docs.basemachina.com/code_management/cli/sync/)と[CI/CD](https://docs.basemachina.com/code_management/ci_cd/)を確認する。
 
@@ -61,6 +61,18 @@ Yarn Berryには同等の標準`outdated` workflowがない。利用中のrepo�
 - 書き込み前に対話確認がある。実行前にユーザーへ確認し、生成ファイルをすべてreviewする
 
 詳細は[`bm pull`](https://docs.basemachina.com/code_management/cli/pull/)を確認する。
+
+## `bm preview action`
+
+- config定義のactionを、`bm sync`せずに開発環境で実行して確認する。実行先は開発環境で固定
+- 既定はbrowser mode。画面が開き、ユーザーが引数を入力して実行する。Ctrl+Cまで動き続け、configを保存すると画面が再読み込みされる
+- `--terminal`ではコマンド自身がactionを実行し、結果をstdoutに出す
+- browser modeはbackground（Claude Codeのbackground実行、Codexのbackground terminalなど）で起動し、ユーザーに画面での確認と実行を依頼する。終わったらprocessを止める
+- `--terminal`は、対象のaction IDと引数をユーザーに示し、明示的に許可を得たときだけ使う。ユーザーが明示的に求めない限り`--force`は付けない
+- review設定は無視され、書き込みを伴うactionは開発環境のデータをすぐ変える
+- `executeAction`で呼ばれるactionは、configではなく開発環境に保存済みの版で動く。呼び出し先の変更も確かめるには、先にユーザーが開発環境へ反映する必要がある
+
+オプションと詳細は`bm preview action --help`と[`bm preview action`](https://docs.basemachina.com/code_management/cli/preview_action/)を確認する。
 
 ## 認証
 
@@ -86,6 +98,7 @@ local dry-runまたはpullで認証を求められた場合は、ユーザーに
 - [`defineConfig`](https://docs.basemachina.com/code_management/sdk/define_config/)
 - [`readFile`](https://docs.basemachina.com/code_management/sdk/read_file/)
 - [`bm pull`](https://docs.basemachina.com/code_management/cli/pull/)
+- [`bm preview action`](https://docs.basemachina.com/code_management/cli/preview_action/)
 - [`bm sync`](https://docs.basemachina.com/code_management/cli/sync/)
 - [CI/CD](https://docs.basemachina.com/code_management/ci_cd/)
 - SDK型定義: `node_modules/@basemachina/sdk/dist/oac/index.d.ts`

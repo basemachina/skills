@@ -7,10 +7,10 @@ BaseMachina を使った開発で利用する Agent Skill コレクションで�
 | skill | 使う場面 |
 | --- | --- |
 | [`basemachina-docs`](skills/basemachina-docs/) | BaseMachina 公式ドキュメントを調査し、仕様・使い方・制約・コード例を根拠 URL 付きで回答 |
-| [`bm-code-management`](skills/bm-code-management/) | `defineAction` / `defineView` / `defineConfig` の編集、`bm pull`、アクション・ビューコードの編集、`bm sync --dry` による差分確認 |
+| [`bm-code-management`](skills/bm-code-management/) | `defineAction` / `defineView` / `defineConfig` の編集、`bm pull`、アクション・ビューコードの編集、`bm sync --dry` による差分確認、`bm preview action` による sync 前の動作確認 |
 | [`bm-public-api`](skills/bm-public-api/) | 公開API（REST API）を外部システムや CI/CD から呼び出すコードの作成、認証、レスポンス・エラーハンドリング |
 
-`basemachina-docs` は現行仕様の調査、`bm-code-management` はコード管理 repo の安全な編集、`bm-public-api` は公開API クライアントの実装に使います。副作用のあるアクション実行と、`--dry` を付けない `bm sync` はエージェントから実行しません。
+`basemachina-docs` は現行仕様の調査、`bm-code-management` はコード管理 repo の安全な編集、`bm-public-api` は公開API クライアントの実装に使います。エージェントは、アクションを自分では実行しません（ユーザーが明示的に許可した、開発環境での `bm preview action --terminal` を除く）。`--dry` を付けない `bm sync` も実行しません。
 
 ## GitHub CLI でインストールする
 
