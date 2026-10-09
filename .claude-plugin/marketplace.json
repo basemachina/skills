@@ -11,7 +11,7 @@
       "name": "bm-skills",
       "source": "./",
       "description": "BaseMachinaの公式ドキュメント調査、コード管理、公開API client実装を支援するskill群",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "license": "MIT",
       "homepage": "https://github.com/basemachina/skills",
       "repository": "https://github.com/basemachina/skills",

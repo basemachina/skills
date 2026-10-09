@@ -1,7 +1,7 @@
 {
   "name": "bm-skills",
   "displayName": "BaseMachina Skills",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "BaseMachinaの公式ドキュメント調査、コード管理、公開API client実装を支援するskill群",
   "author": {
     "name": "BaseMachina",
